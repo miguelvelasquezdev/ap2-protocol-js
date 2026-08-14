@@ -1,0 +1,46 @@
+# Security Policy
+
+`ap2-js` is a cryptographic verification library: its correctness is
+its entire value. This document describes its security posture and how to report
+a vulnerability.
+
+## Status: pre-audit
+
+This SDK is experimental (pre-1.0) and has **not** undergone an independent
+third-party security audit. It has, however, been through an internal adversarial
+review (algorithm-confusion, key-injection, SD-JWT disclosure integrity,
+mandate-chain replay, and constraint fail-open classes). Do not rely on it as the
+sole control for authorizing real payments until it has been independently
+reviewed. Treat every release in the 0.x line as subject to change.
+
+## Design principles
+
+- **Fail closed.** Verification returns a typed `Result`; a denied credential is
+  a value, never a thrown surprise. Unknown or malformed input is rejected, not
+  coerced.
+- **No trust in attacker-supplied key material.** Algorithms are pinned to ES256
+  and keys are always caller-supplied; the library never selects a verification
+  key from a token header (`jwk`/`jku`/`kid`/`x5c`/`x5u`).
+- **Recompute, do not trust.** Binding hashes (`sd_hash`, `checkout_hash`,
+  `transaction_id`) are recomputed and compared, never read and believed.
+- **No side effects.** The library performs no filesystem, network, or logging
+  I/O, and never logs token contents, claims, or key material.
+
+## Supported versions
+
+The current `0.x` pre-release line is the only supported version. Security fixes
+land on the latest `0.x`.
+
+## Reporting a vulnerability
+
+Please report suspected vulnerabilities **privately** via
+[GitHub private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
+on this repository, rather than opening a public issue.
+
+- We aim to acknowledge a report within a few business days.
+- We will work with you on a coordinated disclosure timeline (target: 90 days or
+  sooner once a fix is available).
+- Please include a minimal reproduction (a token/chain and the expected vs actual
+  verdict) where possible.
+
+Thank you for helping make agent payment verification trustworthy.

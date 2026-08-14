@@ -1,0 +1,25 @@
+ap2-js
+Copyright 2026 Miguel Velasquez and contributors
+
+This product is an independent TypeScript implementation of the Agent Payments
+Protocol (AP2). It is licensed under the Apache License, Version 2.0.
+
+The Agent Payments Protocol is an open protocol and reference implementation by
+Google:
+
+  - Specification: https://ap2-protocol.org
+  - Upstream repository: https://github.com/google-agentic-commerce/AP2
+    (Apache License, Version 2.0)
+
+This package is a community initiative. It is NOT an official Google release and
+is NOT affiliated with, endorsed by, or sponsored by Google. It tracks the AP2
+specification and the underlying SD-JWT specifications and aims for compatibility
+with the upstream reference, but any errors are our own.
+
+Portions of the design, the mandate/credential model, and the JSON Schemas
+(schemas/) derive from the upstream AP2 project and remain under its Apache-2.0
+license. This implementation has been independently written for standalone
+TypeScript distribution.
+
+Development note: this package was built with AI assistance (Claude) and reviewed
+and validated by the author, a payments software engineer (@yuno).
