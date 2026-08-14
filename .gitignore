@@ -1,27 +1,10 @@
-# Dependencies
 node_modules/
-
-# Build output
 dist/
 
-# Environment
-.env
-.env.*
-!.env.example
+# examples sub-project
+examples/node_modules/
+examples/dist/
 
-# Source maps
-*.js.map
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Test coverage
-coverage/
-
-# Debug logs
-*.log
+# generated dev keypairs for the examples (never commit private keys)
+examples/.vi-keys.json
+examples/**/*-keys.json
