@@ -1,4 +1,5 @@
 import { Runner } from '@google/adk';
+import { v4 as uuidv4 } from 'uuid';
 import type { AgentCard } from '@a2a-js/sdk';
 
 import { paymentProcessorAgent } from './agent.js';
@@ -18,11 +19,36 @@ const agentExecutor = new BaseAgentExecutor({
   runner,
   maxLlmCalls: 3,
   workingMessage: 'Processing payment...',
-  postprocessResult({ lastToolResult, responseText: _responseText, toolWasCalled: _toolWasCalled }) {
+  postprocessResult({ lastToolResult, taskId, contextId }) {
     // If tool returned input-required or completed, it already published
     // the status update directly via eventBus -- suppress default handling
     if (lastToolResult?.status === 'input-required' || lastToolResult?.status === 'completed') {
       return null; // Signal: already handled
+    }
+
+    // F2: a tool that returns a structured { error } (e.g. "Verifiable Intent
+    // chain verification failed: ...") must fail the task. Falling through to
+    // the base class's default "completed" would hide the real cause and wedge
+    // retries behind a terminal task that never produced a receipt.
+    if (typeof lastToolResult?.error === 'string') {
+      return {
+        kind: 'status-update',
+        taskId,
+        contextId,
+        status: {
+          state: 'failed',
+          message: {
+            kind: 'message',
+            role: 'agent',
+            messageId: uuidv4(),
+            parts: [{ kind: 'text', text: lastToolResult.error }],
+            taskId,
+            contextId,
+          },
+          timestamp: new Date().toISOString(),
+        },
+        final: true,
+      };
     }
 
     // Otherwise, let the base class handle default completion

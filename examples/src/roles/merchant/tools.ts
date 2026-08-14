@@ -417,7 +417,13 @@ export const initiatePayment = new FunctionTool({
       });
     }
 
-    const paymentProcessorTaskId = getPaymentProcessorTaskId(currentTask);
+    // F1: only continue an existing payment-processor task when we are
+    // forwarding an OTP challenge response. On a fresh purchase in the same
+    // context the prior processor task is terminal, and attaching its id makes
+    // the a2a-js SDK reject the send; evict it by not reusing it.
+    const paymentProcessorTaskId = challengeResponse
+      ? getPaymentProcessorTaskId(currentTask)
+      : null;
     if (paymentProcessorTaskId) {
       message.message.taskId = paymentProcessorTaskId;
     }

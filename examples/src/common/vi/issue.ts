@@ -9,7 +9,7 @@ import {
   IssuerCredential,
   createLayer1,
   type SdJwt,
-} from "@verifiable-intent/core";
+} from "verifiable-intent-js";
 import { getViKeys } from "./keys.js";
 
 export const VI_ISSUER_URL = "https://credentials-provider.ap2.example";

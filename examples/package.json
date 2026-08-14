@@ -45,10 +45,10 @@
     "@opentelemetry/sdk-node": "^0.205.0",
     "@opentelemetry/sdk-trace-base": "^2.1.0",
     "@opentelemetry/sdk-trace-node": "^2.1.0",
-    "@verifiable-intent/core": "file:../verifiable-intent/typescript/verifiable-intent-core-0.1.0.tgz",
     "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "uuid": "^13.0.0",
+    "verifiable-intent-js": "^0.1.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

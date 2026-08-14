@@ -341,55 +341,47 @@ export const initiatePayment = new FunctionTool({
     const debugMode =
       (findDataPart("debug_mode", dataParts) as boolean | null) || false;
 
-    // Initial request - raise challenge
-    if (!currentTask) {
+    // F5: gate on the presence of a challenge response, not on task state. A
+    // correct OTP retry after a merchant restart arrives with a fabricated
+    // "working" task, so keying on state === "input-required" would discard a
+    // valid response. Absent a challenge response this is the initial request:
+    // raise the OTP challenge.
+    if (!challengeResponse) {
       await raiseChallenge(eventBus, taskId, contextId);
       return { status: "input-required", message: "Challenge raised" };
     }
 
-    // Handle challenge response
-    if (currentTask.status.state === "input-required") {
-      if (!challengeResponse) {
-        return {
-          error:
-            "Challenge response is required but was not provided. Report this error to the caller.",
-        };
-      }
-
-      if (!challengeResponseIsValid(challengeResponse)) {
-        const statusUpdate: TaskStatusUpdateEvent = {
-          kind: "status-update",
-          taskId,
-          contextId,
-          status: {
-            state: "input-required",
-            message: {
-              kind: "message",
-              role: "agent",
-              messageId: uuidv4(),
-              parts: [{ kind: "text", text: "Challenge response incorrect." }],
-              taskId,
-              contextId,
-            },
-            timestamp: new Date().toISOString(),
-          },
-          final: false,
-        };
-        eventBus.publish(statusUpdate);
-        return { status: "input-required", message: "Invalid challenge" };
-      }
-
-      // Valid challenge response - complete payment
-      await completePayment(
-        paymentMandate,
-        eventBus,
+    if (!challengeResponseIsValid(challengeResponse)) {
+      const statusUpdate: TaskStatusUpdateEvent = {
+        kind: "status-update",
         taskId,
         contextId,
-        debugMode
-      );
-      return { status: "completed", message: "Payment completed" };
+        status: {
+          state: "input-required",
+          message: {
+            kind: "message",
+            role: "agent",
+            messageId: uuidv4(),
+            parts: [{ kind: "text", text: "Challenge response incorrect." }],
+            taskId,
+            contextId,
+          },
+          timestamp: new Date().toISOString(),
+        },
+        final: false,
+      };
+      eventBus.publish(statusUpdate);
+      return { status: "input-required", message: "Invalid challenge" };
     }
 
-    return { status: "unknown", message: "Unexpected task state" };
+    // Valid challenge response - complete payment
+    await completePayment(
+      paymentMandate,
+      eventBus,
+      taskId,
+      contextId,
+      debugMode
+    );
+    return { status: "completed", message: "Payment completed" };
   },
 });

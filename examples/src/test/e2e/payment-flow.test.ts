@@ -1,3 +1,5 @@
+/**
+ * End-to-end smoke test for the AP2 human-present payment flow:
  *   user request → cart → shipping → payment method → mandate → receipt.
  *
  * Assumes the four agents are already running locally (see scenario README).

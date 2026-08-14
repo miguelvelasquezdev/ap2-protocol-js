@@ -357,15 +357,19 @@ export const initiatePayment = new FunctionTool({
       throw new Error('No final task received from merchant');
     }
 
-    context.state.set('initiatePaymentTaskId', finalTask.id);
-
+    // F7: retain initiatePaymentTaskId only across the input-required OTP
+    // round-trip; clear it on every terminal outcome so a later purchase in the
+    // same session does not attach a stale (terminal) task id.
     if (finalTask.status.state === 'input-required' && challengeData) {
+      context.state.set('initiatePaymentTaskId', finalTask.id);
       return {
         status: 'input-required',
         challenge: challengeData,
         message: 'OTP challenge required',
       };
     }
+
+    context.state.set('initiatePaymentTaskId', undefined);
 
     if (finalTask.status.state === 'completed') {
       // Extract payment receipt using canonical key
@@ -465,6 +469,10 @@ export const initiatePaymentWithOtp = new FunctionTool({
     if (!finalTask) {
       throw new Error('No final task received from merchant');
     }
+
+    // F7: the OTP retry has reached a terminal outcome — clear the task id so a
+    // later purchase in this session starts a fresh payment-processor task.
+    context.state.set('initiatePaymentTaskId', undefined);
 
     if (finalTask.status.state === 'completed') {
       // Extract payment receipt using canonical key

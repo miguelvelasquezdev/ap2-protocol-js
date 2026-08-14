@@ -9,7 +9,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateEs256Key } from "@verifiable-intent/core";
+import { generateEs256Key } from "verifiable-intent-js";
 
 export type ViKeyPair = Awaited<ReturnType<typeof generateEs256Key>>;
 

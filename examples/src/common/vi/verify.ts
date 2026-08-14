@@ -3,7 +3,7 @@
  * AP2 PaymentMandate: L1→L2 SD-JWT chain verification plus a cross-check of
  * the disclosed L2 payment amount/currency against the mandate contents.
  */
-import { decodeSdJwt, verifyChain, type SdJwt } from "@verifiable-intent/core";
+import { decodeSdJwt, verifyChain, type SdJwt } from "verifiable-intent-js";
 import { getViKeys } from "./keys.js";
 import {
   PAYMENT_PROCESSOR_AUD,
@@ -63,32 +63,57 @@ export async function verifyUserAuthorization(
     };
   }
 
-  const keys = await getViKeys();
-  const chain = await verifyChain(l1, l2, {
-    issuerPublicJwk: keys.issuer.publicKey,
-    l1Serialized: bundle.l1,
-    expectedL2Aud: expectedAud,
-    expectedL2Nonce: l2NonceFor(paymentMandateContents),
-  });
+  // F6: wrap chain verification and every disclosure cross-check in try/catch so
+  // an attacker-reachable throw (e.g. hashAscii on a non-ASCII claim, or a
+  // malformed disclosure) cannot escape the fail-closed contract.
+  try {
+    const keys = await getViKeys();
+    const chain = await verifyChain(l1, l2, {
+      issuerPublicJwk: keys.issuer.publicKey,
+      l1Serialized: bundle.l1,
+      expectedL2Aud: expectedAud,
+      expectedL2Nonce: l2NonceFor(paymentMandateContents),
+    });
 
-  const errors = [...chain.errors];
+    const errors = [...chain.errors];
 
-  // Cross-check the disclosed L2 payment values against the AP2 mandate.
-  const paymentMandate = disclosedPaymentMandate(l2);
-  const expected = paymentMandateContents.paymentDetailsTotal.amount;
-  const disclosed = paymentMandate?.payment_amount;
-  if (!isObject(disclosed)) {
-    errors.push("no disclosed payment mandate amount in L2");
-  } else if (
-    disclosed.currency !== expected.currency ||
-    disclosed.amount !== toMinorUnits(expected.value)
-  ) {
-    errors.push(
-      `disclosed payment amount ${String(disclosed.amount)} ${String(
-        disclosed.currency
-      )} does not match mandate ${toMinorUnits(expected.value)} ${expected.currency}`
-    );
+    // Cross-check the disclosed L2 payment values against the AP2 mandate.
+    const paymentMandate = disclosedPaymentMandate(l2);
+    const expected = paymentMandateContents.paymentDetailsTotal.amount;
+    const disclosed = paymentMandate?.payment_amount;
+    if (!isObject(disclosed)) {
+      errors.push("no disclosed payment mandate amount in L2");
+    } else if (
+      disclosed.currency !== expected.currency ||
+      disclosed.amount !== toMinorUnits(expected.value)
+    ) {
+      errors.push(
+        `disclosed payment amount ${String(disclosed.amount)} ${String(
+          disclosed.currency
+        )} does not match mandate ${toMinorUnits(expected.value)} ${expected.currency}`
+      );
+    }
+
+    // F8: bind the disclosed payee to the mandate merchant, compared
+    // case-insensitively to match the signer's case-insensitive merchant
+    // canonicalization (user-authorization sets payee.name = merchantAgent).
+    const payee = isObject(paymentMandate?.payee) ? paymentMandate.payee : null;
+    const payeeName = payee?.name;
+    const expectedMerchant = paymentMandateContents.merchantAgent;
+    if (
+      typeof payeeName !== "string" ||
+      payeeName.toLowerCase() !== expectedMerchant.toLowerCase()
+    ) {
+      errors.push(
+        `disclosed payee name ${String(payeeName)} does not match mandate merchant ${expectedMerchant}`
+      );
+    }
+
+    return { valid: chain.valid && errors.length === 0, errors };
+  } catch (err) {
+    return {
+      valid: false,
+      errors: [`chain verification threw: ${(err as Error).message}`],
+    };
   }
-
-  return { valid: chain.valid && errors.length === 0, errors };
 }

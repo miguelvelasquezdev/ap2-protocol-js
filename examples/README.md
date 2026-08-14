@@ -78,7 +78,8 @@ npx vitest run src/test/vi
 
 ## Verifiable Intent layer
 
-The sample integrates the [`@verifiable-intent/core`](../verifiable-intent)
+The sample integrates the published
+[`verifiable-intent-js`](https://www.npmjs.com/package/verifiable-intent-js)
 SDK to make the user's authorization cryptographically verifiable instead of a
 placeholder string:
 

@@ -14,7 +14,7 @@ import {
   jwtEncode,
   makeSigner,
   type SdJwt,
-} from "@verifiable-intent/core";
+} from "verifiable-intent-js";
 import type { CartMandate } from "../types/cart-mandate.js";
 import type { PaymentMandate } from "../types/payment-mandate.js";
 import { getViKeys } from "./keys.js";
