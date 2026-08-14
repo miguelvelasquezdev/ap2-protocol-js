@@ -15,6 +15,7 @@ import { getA2AContextFromTool } from "../../common/server/a2a-context.js";
 import type { PaymentMandate } from "../../common/types/payment-mandate.js";
 import type { PaymentReceipt } from "../../common/types/payment-receipt.js";
 import { paymentMandateSchema } from "../../common/schemas/payment-mandate.js";
+import { verifyUserAuthorization } from "../../common/vi/verify.js";
 import { DATA_KEYS } from "../../common/constants/index.js";
 
 const PAYMENT_MANDATE_DATA_KEY = DATA_KEYS.PAYMENT_MANDATE;
@@ -317,6 +318,20 @@ export const initiatePayment = new FunctionTool({
       return {
         error:
           "PaymentMandate not found in request data. Report this error to the caller.",
+      };
+    }
+
+    // Verify the Verifiable Intent chain in userAuthorization before raising
+    // any challenge or executing the payment.
+    const viResult = await verifyUserAuthorization(
+      paymentMandate.userAuthorization,
+      paymentMandate.paymentMandateContents
+    );
+    if (!viResult.valid) {
+      return {
+        error: `Payment mandate user authorization failed verification: ${viResult.errors.join(
+          "; "
+        )}. Report this error to the caller.`,
       };
     }
 

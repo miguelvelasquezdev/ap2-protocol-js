@@ -11,6 +11,8 @@ import type {
 import type { CartMandate } from '../../common/types/cart-mandate.js';
 import type { PaymentMandate } from '../../common/types/payment-mandate.js';
 import { DATA_KEYS } from '../../common/constants/index.js';
+import { issueL1ForUser } from '../../common/vi/issue.js';
+import { createUserAuthorization } from '../../common/vi/user-authorization.js';
 import { AGENT_URLS } from '../index.js';
 
 /** Wrap a promise with a timeout to prevent hanging on unresponsive agents. */
@@ -159,28 +161,42 @@ export const createPaymentMandate = new FunctionTool({
 /**
  * Tool 3: Sign Mandates on User Device
  *
- * Simulates cryptographic signing on a trusted user device.
+ * Signs the payment mandate with a Verifiable Intent (VI) delegation chain:
+ * an L1 issuer credential plus an L2 immediate user mandate over the final
+ * cart and payment values, carried in `userAuthorization` and verified by
+ * the payment processor.
  */
 export const signMandatesOnUserDevice = new FunctionTool({
   name: 'signMandatesOnUserDevice',
-  description: 'Signs the payment mandate on the user\'s trusted device (simulated for demo).',
+  description: 'Signs the payment mandate on the user\'s trusted device with a Verifiable Intent credential chain.',
   parameters: z.object({
     _trigger: z.boolean().optional().describe('Tool trigger'),
   }),
   execute: async (input, context) => {
     if (!context) throw new Error('Missing execution context');
     const paymentMandate = context.state.get('paymentMandate') as PaymentMandate | undefined;
+    const cartMandate = context.state.get('cartMandate') as CartMandate | undefined;
 
     if (!paymentMandate) {
       throw new Error('No payment mandate found to sign');
     }
 
-    // Simulate signing with hash-based user authorization (matching Python)
-    const cartMandateHash = `cart_hash_${Date.now()}`;
-    const paymentMandateHash = `payment_hash_${Date.now()}`;
+    if (!cartMandate) {
+      throw new Error('No cart mandate found to sign');
+    }
+
+    // In production the L1 issuer credential is minted by the credentials
+    // provider and fetched over A2A; for the demo it is issued locally with
+    // the issuer dev key.
+    const l1 = await issueL1ForUser();
+    const userAuthorization = await createUserAuthorization({
+      l1,
+      cartMandate,
+      paymentMandateContents: paymentMandate.paymentMandateContents,
+    });
     const signedPaymentMandate: PaymentMandate = {
       ...paymentMandate,
-      userAuthorization: `${cartMandateHash}_${paymentMandateHash}`,
+      userAuthorization,
     };
 
     context.state.set('signedPaymentMandate', signedPaymentMandate);
