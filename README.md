@@ -1,6 +1,6 @@
-# ap2-js
+# ap2-protocol-js
 
-`ap2-js` is a TypeScript implementation of the
+`ap2-protocol-js` is a TypeScript implementation of the
 [Agent Payments Protocol (AP2)](https://ap2-protocol.org): create, present, and
 verify mandates (SD-JWT delegation chains), issue and verify receipts, and
 evaluate mandate constraints. TypeScript-native, framework-agnostic, with only
@@ -50,13 +50,13 @@ It covers the mandate lifecycle the reference sample flows exercise
 | `src/constraints` | constraint evaluation + typed mandate chains |
 | `src/schemas` | generated Zod schemas + types (curated re-export) |
 
-Subpath exports mirror these: `ap2-js/mandate`, `/sdjwt`,
-`/schemas`, `/receipts`, `/constraints`.
+Everything is re-exported from the package root, so a single
+`import { ... } from "ap2-protocol-js"` reaches every layer.
 
 ## Usage
 
 ```ts
-import { createMandate, presentMandate, verifyMandate } from "ap2-js";
+import { createMandate, presentMandate, verifyMandate } from "ap2-protocol-js";
 
 // Issue an open mandate that delegates to a holder key.
 const open = await createMandate({ payload: openMandate, issuerKey });

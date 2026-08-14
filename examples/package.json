@@ -1,5 +1,6 @@
 {
-  "name": "ap2-js",
+  "name": "ap2-js-examples",
+  "private": true,
   "version": "0.1.0",
   "description": "JavaScript/TypeScript samples for the Agent Payments Protocol (AP2).",
   "type": "module",

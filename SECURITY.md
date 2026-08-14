@@ -1,6 +1,6 @@
 # Security Policy
 
-`ap2-js` is a cryptographic verification library: its correctness is
+`ap2-protocol-js` is a cryptographic verification library: its correctness is
 its entire value. This document describes its security posture and how to report
 a vulnerability.
 

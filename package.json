@@ -1,5 +1,5 @@
 {
-  "name": "ap2-js",
+  "name": "ap2-protocol-js",
   "version": "0.1.0",
   "description": "Independent TypeScript implementation of the Agent Payments Protocol (AP2): SD-JWT mandate delegation chains, receipts, and constraint evaluation. Community project; not affiliated with or endorsed by Google.",
   "license": "Apache-2.0",
