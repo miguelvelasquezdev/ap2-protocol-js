@@ -1,4 +1,4 @@
-# ap2-js
+# ap2-protocol-js — examples
 
 JavaScript/TypeScript samples for the Agent Payments Protocol (AP2), built on
 the [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and the
@@ -27,7 +27,7 @@ Node.js, or edge runtimes:
 ## Project Structure
 
 ```text
-ap2-js/
+ap2-protocol-js/
 └── src/
     ├── roles/                  # Agent role implementations and entry points
     │   ├── shopping/           # Shopping Agent (root orchestrator)

@@ -6,10 +6,10 @@
   "author": "Miguel Velasquez",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/miguelvelasquezdev/ap2-js.git"
+    "url": "git+https://github.com/miguelvelasquezdev/ap2-protocol-js.git"
   },
-  "homepage": "https://github.com/miguelvelasquezdev/ap2-js#readme",
-  "bugs": "https://github.com/miguelvelasquezdev/ap2-js/issues",
+  "homepage": "https://github.com/miguelvelasquezdev/ap2-protocol-js#readme",
+  "bugs": "https://github.com/miguelvelasquezdev/ap2-protocol-js/issues",
   "type": "module",
   "engines": {
     "node": ">=20"
