@@ -1,1 +1,124 @@
-{ "vectors": [] }
+{
+  "vectors": [
+    {
+      "name": "reference valid payment chain (amount within range)",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "issuer-key-1",
+        "kty": "EC",
+        "x": "w2Pdv0OXAro6IFVXNsaBbJFSxjmnFJ5YjzIzAvrZZ8g",
+        "y": "D7k8VvHXyTV15MCABdF7gxsy-14cBmlpL7A98vaJiP8",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIjRQZWNsU0ZNMWtHM0hLT2U5RGl6TFVDd1JDaFY0cjB3ZHBrYjhJaG1LYzQifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.PYlDb9Y9TQZok-zbQdTXQy55vXkZ1wRNs1J1c-T5xFYu3eD6uwOzkNSZBQ3V22q6AGv6AeoIqoBNVzoFmo2M_A~WyI5S2N3ZDlMXzJwTktjdUxJeGVyRFlRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIllWcnJDYlNRZTBZZHhnSWVVVjA2Rm13NHlIQ1lzLWVDS1FMOGF3MmJFZ0EifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogIjh3Y2dVSFpJZkRfWGtpenhuZV9hV0hYUUJ2YkgxWnlXRkRLeVhXbWZyNlEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.CXwCqXFxB4VNBSfSWYsptTk3bCt5wzzqzg0z0VpoOzQs70thA2wgGa9VsARJxh9GCMbm2NMI4PVWqfz4NDZxNw~WyJSVTQ3OWh1WWdjUHhXNi0wLVU4c05nIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfMSIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAicGktMSIsICJ0eXBlIjogImNyZWRpdCJ9fV0~",
+      "expected_aud": "merchant",
+      "expected_nonce": "merchant-nonce-abc123",
+      "should_verify": true,
+      "expected_open_checkout_hash": "checkout-hash-xyz",
+      "expected_transaction_id": "tx_1",
+      "constraints_ok": true
+    },
+    {
+      "name": "reference over-budget chain (crypto valid, constraint invalid)",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "issuer-key-1",
+        "kty": "EC",
+        "x": "w2Pdv0OXAro6IFVXNsaBbJFSxjmnFJ5YjzIzAvrZZ8g",
+        "y": "D7k8VvHXyTV15MCABdF7gxsy-14cBmlpL7A98vaJiP8",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogImRTRWt4UUEyMG1GVlJMUXBDcVM1anJhcWZSVWhIUzhYd0lkLW9VZjNkc2sifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.ancsn5yfgysVppmMMuOXfVVRGsqBzxHsGqqIM8zTeC2uh5-jrWAbh3oS7UQcvwa894KyVX27orkbFeNjehFkFw~WyJEQ3BzRkU5Z1JUYXVzVkxqUGFfUXdRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIncyWF96UFRrWHY1YkFLbE1FS0wyNTZmU01ubTg4RjNwZDBYVHlrTWxhVU0ifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogInF5SFRYMV9ELUdVOHc2Rm16dG40V080cVpjdFROSXZ6cU9tZF9rOFdFZWsiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.lpI-ZufWZ9cVAj0sZLUNNl-XK_KrtqF19RO5IPFKrOb4cAiEu3ni-AxReuGWSnI23qwAxV4g1bzDYSLCdMaB3Q~WyIwV2RnRDYtMVJzSWpTYnFKN1o4RjRnIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfb3ZlciIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAwLCAiY3VycmVuY3kiOiAiVVNEIn0sICJwYXltZW50X2luc3RydW1lbnQiOiB7ImlkIjogInBpLTEiLCAidHlwZSI6ICJjcmVkaXQifX1d~",
+      "expected_aud": "merchant",
+      "expected_nonce": "merchant-nonce-abc123",
+      "should_verify": true,
+      "expected_open_checkout_hash": "checkout-hash-xyz",
+      "expected_transaction_id": "tx_over",
+      "constraints_ok": false
+    },
+    {
+      "name": "reference valid chain, missing expected_open_checkout_hash",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "issuer-key-1",
+        "kty": "EC",
+        "x": "w2Pdv0OXAro6IFVXNsaBbJFSxjmnFJ5YjzIzAvrZZ8g",
+        "y": "D7k8VvHXyTV15MCABdF7gxsy-14cBmlpL7A98vaJiP8",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIjRQZWNsU0ZNMWtHM0hLT2U5RGl6TFVDd1JDaFY0cjB3ZHBrYjhJaG1LYzQifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.PYlDb9Y9TQZok-zbQdTXQy55vXkZ1wRNs1J1c-T5xFYu3eD6uwOzkNSZBQ3V22q6AGv6AeoIqoBNVzoFmo2M_A~WyI5S2N3ZDlMXzJwTktjdUxJeGVyRFlRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIllWcnJDYlNRZTBZZHhnSWVVVjA2Rm13NHlIQ1lzLWVDS1FMOGF3MmJFZ0EifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogIjh3Y2dVSFpJZkRfWGtpenhuZV9hV0hYUUJ2YkgxWnlXRkRLeVhXbWZyNlEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.CXwCqXFxB4VNBSfSWYsptTk3bCt5wzzqzg0z0VpoOzQs70thA2wgGa9VsARJxh9GCMbm2NMI4PVWqfz4NDZxNw~WyJSVTQ3OWh1WWdjUHhXNi0wLVU4c05nIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfMSIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAicGktMSIsICJ0eXBlIjogImNyZWRpdCJ9fV0~",
+      "expected_aud": "merchant",
+      "expected_nonce": "merchant-nonce-abc123",
+      "should_verify": true,
+      "expected_transaction_id": "tx_1",
+      "constraints_ok": false
+    },
+    {
+      "name": "reference chain, wrong expected aud",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "issuer-key-1",
+        "kty": "EC",
+        "x": "w2Pdv0OXAro6IFVXNsaBbJFSxjmnFJ5YjzIzAvrZZ8g",
+        "y": "D7k8VvHXyTV15MCABdF7gxsy-14cBmlpL7A98vaJiP8",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIjRQZWNsU0ZNMWtHM0hLT2U5RGl6TFVDd1JDaFY0cjB3ZHBrYjhJaG1LYzQifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.PYlDb9Y9TQZok-zbQdTXQy55vXkZ1wRNs1J1c-T5xFYu3eD6uwOzkNSZBQ3V22q6AGv6AeoIqoBNVzoFmo2M_A~WyI5S2N3ZDlMXzJwTktjdUxJeGVyRFlRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIllWcnJDYlNRZTBZZHhnSWVVVjA2Rm13NHlIQ1lzLWVDS1FMOGF3MmJFZ0EifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogIjh3Y2dVSFpJZkRfWGtpenhuZV9hV0hYUUJ2YkgxWnlXRkRLeVhXbWZyNlEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.CXwCqXFxB4VNBSfSWYsptTk3bCt5wzzqzg0z0VpoOzQs70thA2wgGa9VsARJxh9GCMbm2NMI4PVWqfz4NDZxNw~WyJSVTQ3OWh1WWdjUHhXNi0wLVU4c05nIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfMSIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAicGktMSIsICJ0eXBlIjogImNyZWRpdCJ9fV0~",
+      "expected_aud": "not-the-merchant",
+      "expected_nonce": "merchant-nonce-abc123",
+      "should_verify": false
+    },
+    {
+      "name": "reference chain, wrong expected nonce",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "issuer-key-1",
+        "kty": "EC",
+        "x": "w2Pdv0OXAro6IFVXNsaBbJFSxjmnFJ5YjzIzAvrZZ8g",
+        "y": "D7k8VvHXyTV15MCABdF7gxsy-14cBmlpL7A98vaJiP8",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIjRQZWNsU0ZNMWtHM0hLT2U5RGl6TFVDd1JDaFY0cjB3ZHBrYjhJaG1LYzQifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.PYlDb9Y9TQZok-zbQdTXQy55vXkZ1wRNs1J1c-T5xFYu3eD6uwOzkNSZBQ3V22q6AGv6AeoIqoBNVzoFmo2M_A~WyI5S2N3ZDlMXzJwTktjdUxJeGVyRFlRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIllWcnJDYlNRZTBZZHhnSWVVVjA2Rm13NHlIQ1lzLWVDS1FMOGF3MmJFZ0EifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogIjh3Y2dVSFpJZkRfWGtpenhuZV9hV0hYUUJ2YkgxWnlXRkRLeVhXbWZyNlEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.CXwCqXFxB4VNBSfSWYsptTk3bCt5wzzqzg0z0VpoOzQs70thA2wgGa9VsARJxh9GCMbm2NMI4PVWqfz4NDZxNw~WyJSVTQ3OWh1WWdjUHhXNi0wLVU4c05nIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfMSIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAicGktMSIsICJ0eXBlIjogImNyZWRpdCJ9fV0~",
+      "expected_aud": "merchant",
+      "expected_nonce": "wrong-nonce",
+      "should_verify": false
+    },
+    {
+      "name": "reference chain, tampered bytes",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "issuer-key-1",
+        "kty": "EC",
+        "x": "w2Pdv0OXAro6IFVXNsaBbJFSxjmnFJ5YjzIzAvrZZ8g",
+        "y": "D7k8VvHXyTV15MCABdF7gxsy-14cBmlpL7A98vaJiP8",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIjRQZWNsU0ZNMWtHM0hLT2U5RGl6TFVDd1JDaFY0cjB3ZHBrYjhJaG1LYzQifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.PYlDb9Y9TQZok-zbQdTXQy55vXkZ1wRNs1J1c-T5xFYu3eD6uwOzkNSZBQ3V22q6AGv6AeoIqoBNVzoFmo2M_A~WyI5S2N3ZDlMXzJwTktjdUxJeGVyRFlRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIllWcnJDYlNRZTBZZHhnSWVVVjA2Rm13NHlIQ1lzLWVDS1FMOGF3MmJFZ0EifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogIjh3Y2dVSFpJZkRfWGtpenhuZV9hV0hYUUJ2YkgxWnlXRkRLeVhXbWZyNlEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.CXwCqXFxB4VNBSfSWYsptTk3bCt5wzzqzg0z0VpoOzQs70thA2wgGa9VsARJxh9GCMbm2NMI4PVWqfz4NDZxNw~WyJSVTQ3OWh1WWdjUHhXNi0wLVU4c05nIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfMSIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAicGktMSIsICJ0eXBlIjogImNyZWRpdCXXXXX~",
+      "expected_aud": "merchant",
+      "expected_nonce": "merchant-nonce-abc123",
+      "should_verify": false
+    },
+    {
+      "name": "reference chain, wrong issuer key",
+      "kind": "chain",
+      "issuer_jwk": {
+        "crv": "P-256",
+        "kid": "evil-key-1",
+        "kty": "EC",
+        "x": "XkaUJu54WPDqGNGT_HnWOfybT_5jnpunhjgyNXoIneA",
+        "y": "ZJ_UCXqlGOXdzpPe_sZhSymprACc8Slgh5T67pudekw",
+        "alg": "ES256"
+      },
+      "token": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0IiwgImtpZCI6ICJpc3N1ZXIta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIjRQZWNsU0ZNMWtHM0hLT2U5RGl6TFVDd1JDaFY0cjB3ZHBrYjhJaG1LYzQifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.PYlDb9Y9TQZok-zbQdTXQy55vXkZ1wRNs1J1c-T5xFYu3eD6uwOzkNSZBQ3V22q6AGv6AeoIqoBNVzoFmo2M_A~WyI5S2N3ZDlMXzJwTktjdUxJeGVyRFlRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxMDB9LCB7InR5cGUiOiAicGF5bWVudC5yZWZlcmVuY2UiLCAiY29uZGl0aW9uYWxfdHJhbnNhY3Rpb25faWQiOiAiY2hlY2tvdXQtaGFzaC14eXoifV0sICJjbmYiOiB7Imp3ayI6IHsiY3J2IjogIlAtMjU2IiwgImtpZCI6ICJhZ2VudC1rZXktMSIsICJrdHkiOiAiRUMiLCAieCI6ICJhSVc4M1MwN3RDdXk4aU1KZlg5VFB6bkZPS25fQ0hZdjdfNzBTX09pYlUwIiwgInkiOiAibVZNaDlCRjJVSWxKOGFMS0p6WEJ1dlViR1V1WHhldEc4SHlROGRLalY1ayJ9fX1d~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCIsICJraWQiOiAiYWdlbnQta2V5LTEifQ.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIllWcnJDYlNRZTBZZHhnSWVVVjA2Rm13NHlIQ1lzLWVDS1FMOGF3MmJFZ0EifV0sICJpYXQiOiAxNzg3MDc5NjUzLCAiYXVkIjogIm1lcmNoYW50IiwgIm5vbmNlIjogIm1lcmNoYW50LW5vbmNlLWFiYzEyMyIsICJzZF9oYXNoIjogIjh3Y2dVSFpJZkRfWGtpenhuZV9hV0hYUUJ2YkgxWnlXRkRLeVhXbWZyNlEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.CXwCqXFxB4VNBSfSWYsptTk3bCt5wzzqzg0z0VpoOzQs70thA2wgGa9VsARJxh9GCMbm2NMI4PVWqfz4NDZxNw~WyJSVTQ3OWh1WWdjUHhXNi0wLVU4c05nIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAidHhfMSIsICJwYXllZSI6IHsiaWQiOiAicy0xIiwgIm5hbWUiOiAiU2hvcCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDEwMDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAicGktMSIsICJ0eXBlIjogImNyZWRpdCJ9fV0~",
+      "expected_aud": "merchant",
+      "expected_nonce": "merchant-nonce-abc123",
+      "should_verify": false
+    }
+  ]
+}

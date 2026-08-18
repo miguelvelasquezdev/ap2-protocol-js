@@ -2,13 +2,24 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { verifyMandate, verifyReceipt, type Jwk } from "../src/index.ts";
+import {
+  parsePaymentMandateChain,
+  verifyMandate,
+  verifyPaymentMandateChain,
+  verifyReceipt,
+  type Jwk,
+} from "../src/index.ts";
 
 /**
  * Cross-implementation vectors: chains/receipts SIGNED by the reference Python
- * ap2.sdk and VERIFIED here. Generate with scripts/generate-fixtures.py. When
- * the file is the empty scaffold the suite is a no-op placeholder that turns
- * live as soon as vectors are committed.
+ * ap2.sdk and VERIFIED here. Generate with scripts/generate-fixtures.py. A green
+ * suite proves ap2-protocol-js interoperates with the reference on the wire
+ * (same SD-JWT chain format, crypto, binding, and constraint semantics) — not
+ * just that it is self-consistent.
+ *
+ * Two verification layers are asserted independently, matching the reference:
+ *   - `should_verify`  → verifyMandate (signatures, binding, aud/nonce)
+ *   - `constraints_ok` → verifyPaymentMandateChain (business constraints)
  */
 interface Vector {
   name: string;
@@ -19,6 +30,11 @@ interface Vector {
   expected_nonce?: string;
   now?: number;
   should_verify: boolean;
+  // Constraint layer (chains):
+  expected_open_checkout_hash?: string;
+  expected_transaction_id?: string;
+  constraints_ok?: boolean;
+  // Receipts:
   receipt_kind?: "payment" | "checkout";
   reference?: string;
 }
@@ -44,6 +60,7 @@ describe("cross-impl vectors (reference Python -> TS verify)", () => {
         expect(result.ok).toBe(v.should_verify);
         return;
       }
+
       const result = await verifyMandate({
         token: v.token,
         key: v.issuer_jwk,
@@ -53,6 +70,23 @@ describe("cross-impl vectors (reference Python -> TS verify)", () => {
         ...(v.now !== undefined ? { nowSeconds: v.now } : {}),
       });
       expect(result.ok).toBe(v.should_verify);
+
+      // Constraint layer: only meaningful once the chain crypto-verifies.
+      if (v.constraints_ok !== undefined && result.ok && result.value.kind === "chain") {
+        const parsed = parsePaymentMandateChain(result.value.payloads);
+        expect(parsed.ok).toBe(true);
+        if (parsed.ok) {
+          const violations = await verifyPaymentMandateChain(parsed.value, {
+            ...(v.expected_transaction_id !== undefined
+              ? { expectedTransactionId: v.expected_transaction_id }
+              : {}),
+            ...(v.expected_open_checkout_hash !== undefined
+              ? { expectedOpenCheckoutHash: v.expected_open_checkout_hash }
+              : {}),
+          });
+          expect(violations.length === 0).toBe(v.constraints_ok);
+        }
+      }
     });
   }
 });
