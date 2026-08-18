@@ -1,5 +1,5 @@
 /**
- * @ap2-protocol/sdk - TypeScript SDK for the Agent Payments Protocol (AP2).
+ * ap2-protocol-js - TypeScript SDK for the Agent Payments Protocol (AP2).
  *
  * Curated public surface (subpath exports mirror these groups):
  * - mandate: create / present / verify mandates and chains
@@ -88,6 +88,7 @@ export {
   checkCheckoutConstraints,
   parsePaymentMandateChain,
   verifyPaymentMandateChain,
+  verifyPaymentMandate,
   parseCheckoutMandateChain,
   verifyCheckoutMandateChain,
   extractParsedCheckoutObject,
@@ -97,6 +98,8 @@ export type {
   PaymentMandateChain,
   CheckoutMandateChain,
   VerifyPaymentMandateChainOptions,
+  VerifyPaymentMandateOptions,
+  VerifiedPaymentMandate,
   VerifyCheckoutMandateChainOptions,
 } from "./constraints/index.ts";
 

@@ -21,6 +21,7 @@ export type Ap2ErrorCode =
   | "iat_invalid"
   | "payload_invalid"
   | "disclosure_invalid"
+  | "constraints_violated"
   | "x5c_not_supported"
   | "internal";
 

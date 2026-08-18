@@ -55,26 +55,79 @@ Everything is re-exported from the package root, so a single
 
 ## Usage
 
+### Verify (merchant / PSP side)
+
+Use **`verifyPaymentMandate`**. It fails closed on BOTH the delegation chain
+(signatures, key binding, aud/nonce) AND the mandate's own constraints (amount
+range, payee, checkout binding, budget), so `if (result.ok)` is a safe
+authorization gate.
+
 ```ts
-import { createMandate, presentMandate, verifyMandate } from "ap2-protocol-js";
+import { verifyPaymentMandate } from "ap2-protocol-js";
 
-// Issue an open mandate that delegates to a holder key.
-const open = await createMandate({ payload: openMandate, issuerKey });
-
-// The holder presents a key-bound closed mandate.
-const chain = await presentMandate({
-  holderKey, mandateToken: open, payload: closedMandate, aud: "merchant", nonce,
+const result = await verifyPaymentMandate({
+  token: chain,                        // the ~~-joined SD-JWT presentation from the agent
+  resolveKey: () => issuerPublicJwk,   // resolve the ROOT issuer's public JWK out of band
+  expectedAud: "merchant.example",     // this verifier's identity  (replay defense)
+  expectedNonce: nonce,                // the fresh nonce it issued  (replay defense)
+  expectedOpenCheckoutHash: hash,      // binds the open mandate to this checkout
 });
 
-// A verifier checks the chain, resolving the root issuer key out of band.
-const result = await verifyMandate({
-  token: chain, resolveKey: () => issuerPublicJwk,
-  expectedAud: "merchant", expectedNonce: nonce,
-});
 if (result.ok) {
-  // result.value.payloads: the effective payloads, extended per hop
+  const { closedMandate } = result.value.chain;
+  closedMandate.payment_amount; // { currency: "USD", amount: 2999 } — constraints already enforced
+  closedMandate.payee;          // the authorized merchant
+} else {
+  result.error.code; // "signature_invalid" | "nonce_mismatch" | "constraints_violated" | ...
 }
 ```
+
+> **Do not gate on `verifyMandate` alone.** `verifyMandate` proves the chain is
+> cryptographically authentic but does NOT evaluate constraints, so an
+> over-budget or wrong-payee mandate would still return `ok`. Use
+> `verifyPaymentMandate` above, or run the three-step path yourself:
+> `verifyMandate` → `parsePaymentMandateChain` → `verifyPaymentMandateChain`.
+> The key option is `resolveKey` (chain) or `key` (single token) — not
+> `issuerKey`; an unknown option is ignored and yields a fail-closed
+> `missing_key` deny.
+
+### Issue + present (agent / credentials-provider side)
+
+```ts
+import { createMandate, presentMandate } from "ap2-protocol-js";
+
+// Open mandate: the standing authorization, bound to the agent's key (cnf) and
+// capped by an amount range. AP2 requires a payment.reference constraint.
+const open = await createMandate({
+  payload: {
+    vct: "mandate.payment.open.1",
+    constraints: [
+      { type: "payment.reference", conditional_transaction_id: hash },
+      { type: "payment.amount_range", currency: "USD", min: 100, max: 50000 },
+    ],
+    cnf: { jwk: { kty: agentPub.kty, crv: agentPub.crv, x: agentPub.x, y: agentPub.y, kid: agentPub.kid } },
+  },
+  issuerKey: issuerPrivateJwk,
+});
+
+// Closed mandate: the agent presents the exact purchase, key-bound to aud+nonce.
+const chain = await presentMandate({
+  holderKey: agentPrivateJwk,
+  mandateToken: open,
+  payload: {
+    vct: "mandate.payment.1",
+    transaction_id: "txn-1",
+    payee: { id: "m-1", name: "Acme", website: "https://acme.example" },
+    payment_amount: { currency: "USD", amount: 2999 },
+    payment_instrument: { id: "pi-1", type: "CARD" },
+  },
+  aud: "merchant.example",
+  nonce,
+});
+```
+
+A full runnable version (keygen → issue → present → verify, plus the over-budget
+deny) is in [`example/verify-payment-mandate.mjs`](./example/verify-payment-mandate.mjs).
 
 ## Scripts
 
@@ -94,5 +147,7 @@ npm run typecheck   # tsc --noEmit at strict settings
 - Disclosure metadata derived from the schema `x-selectively-disclosable-*`
   annotations, and decoy claims.
 - The DPC / human-present flow.
-- Cross-impl vectors generated from the reference Python SDK
-  (`scripts/generate-fixtures.py`).
+- ~~Cross-impl vectors generated from the reference Python SDK.~~ **Done** —
+  `scripts/generate-fixtures.py` drives the reference `ap2.sdk` and
+  `test/vectors.test.ts` verifies them here (both directions; see
+  `scripts/interop/`).

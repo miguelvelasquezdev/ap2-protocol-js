@@ -35,7 +35,8 @@
     "dist",
     "README.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "example"
   ],
   "publishConfig": {
     "access": "public"

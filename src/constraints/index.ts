@@ -10,6 +10,7 @@
  */
 import { err, ok, type Result } from "../errors.ts";
 import { b64urlDecode, computeSha256B64url } from "../crypto/index.ts";
+import { verifyMandate, type VerifyMandateOptions } from "../mandate/index.ts";
 import {
   CheckoutMandateSchema,
   CheckoutSchema,
@@ -387,4 +388,67 @@ export async function verifyCheckoutMandateChain(
     }
   }
   return violations;
+}
+
+// ── Safe one-call payment-mandate verification ───────────────────────────────
+
+export interface VerifyPaymentMandateOptions
+  extends VerifyMandateOptions,
+    VerifyPaymentMandateChainOptions {}
+
+export interface VerifiedPaymentMandate {
+  /** The typed, crypto- and constraint-verified open + closed mandate. */
+  readonly chain: PaymentMandateChain;
+}
+
+/**
+ * Verify a payment-mandate presentation END TO END and fail-closed on either
+ * layer: the SD-JWT delegation chain (signatures, key binding, aud/nonce) AND
+ * the mandate's own constraints (amount range, payee, checkout binding, budget/
+ * recurrence). Returns `ok` ONLY when both pass, so `if (result.ok)` is a safe
+ * authorization gate.
+ *
+ * Prefer this over calling `verifyMandate` directly: `verifyMandate` proves the
+ * chain is cryptographically authentic but does NOT evaluate constraints, so an
+ * over-budget or wrong-payee mandate would still verify. This function is the
+ * pit of success.
+ */
+export async function verifyPaymentMandate(
+  options: VerifyPaymentMandateOptions,
+): Promise<Result<VerifiedPaymentMandate>> {
+  const verified = await verifyMandate({
+    token: options.token,
+    ...(options.key !== undefined ? { key: options.key } : {}),
+    ...(options.resolveKey !== undefined ? { resolveKey: options.resolveKey } : {}),
+    ...(options.expectedAud !== undefined ? { expectedAud: options.expectedAud } : {}),
+    ...(options.expectedNonce !== undefined ? { expectedNonce: options.expectedNonce } : {}),
+    ...(options.clockSkewSeconds !== undefined ? { clockSkewSeconds: options.clockSkewSeconds } : {}),
+    ...(options.nowSeconds !== undefined ? { nowSeconds: options.nowSeconds } : {}),
+    ...(options.requireHashMode !== undefined ? { requireHashMode: options.requireHashMode } : {}),
+  });
+  if (!verified.ok) return verified;
+  if (verified.value.kind !== "chain") {
+    return err(
+      "payload_invalid",
+      "verifyPaymentMandate requires a payment-mandate chain (open + closed), not a single mandate",
+    );
+  }
+
+  const parsed = parsePaymentMandateChain(verified.value.payloads);
+  if (!parsed.ok) return parsed;
+
+  const violations = await verifyPaymentMandateChain(parsed.value, {
+    ...(options.expectedTransactionId !== undefined
+      ? { expectedTransactionId: options.expectedTransactionId }
+      : {}),
+    ...(options.expectedOpenCheckoutHash !== undefined
+      ? { expectedOpenCheckoutHash: options.expectedOpenCheckoutHash }
+      : {}),
+    ...(options.context !== undefined ? { context: options.context } : {}),
+    ...(options.checkoutJwt !== undefined ? { checkoutJwt: options.checkoutJwt } : {}),
+  });
+  if (violations.length > 0) {
+    return err("constraints_violated", violations.join("; "));
+  }
+  return ok({ chain: parsed.value });
 }
