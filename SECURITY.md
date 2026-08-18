@@ -37,6 +37,18 @@ against trusted roots. Built-in `x5c` chain resolution is intentionally not
 bundled — `x5cPublicKeyProvider()` fails closed and directs you to `resolveKey`.
 (An audited built-in `x5c` provider is a candidate for a future release.)
 
+## Stateful constraints (budget / recurrence) — you own persistence
+
+The `payment.budget` and `payment.agent_recurrence` constraints are evaluated
+against counters you pass in `MandateContext` (`totalAmount`, `totalUses`,
+`lastUsedDate`). **The SDK never persists these and does no locking** — it reads
+what you hand it. To actually prevent over-spend or replay you MUST back these
+counters with a **durable, atomic, race-safe** store and update them under a
+transaction/idempotency key around each authorization; otherwise concurrent
+requests can each read a stale counter and double-spend. Also note
+`agent_recurrence` enforces `max_occurrences` only — `frequency`/period windowing
+is not evaluated by the SDK (parity with the reference; it is the network's job).
+
 ## Supported versions
 
 The current `0.x` pre-release line is the only supported version. Security fixes
