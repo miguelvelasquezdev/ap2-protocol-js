@@ -11,6 +11,7 @@
 import { err, ok, type Result } from "../errors.ts";
 import { b64urlDecode, computeSha256B64url } from "../crypto/index.ts";
 import { verifyMandate, type VerifyMandateOptions } from "../mandate/index.ts";
+import { evaluateLineItemsMaxFlow } from "./line-items.ts";
 import {
   CheckoutMandateSchema,
   CheckoutSchema,
@@ -243,7 +244,12 @@ export function checkCheckoutConstraints(
         break;
       }
       case "checkout.line_items": {
-        violations.push("line_items: not supported yet (max-flow matching is a follow-on)");
+        // Empty-cart guard lives here (not the matcher), matching the reference.
+        if (checkout.line_items.length === 0) {
+          violations.push("Empty cart does not satisfy line_items constraint");
+        } else {
+          violations.push(...evaluateLineItemsMaxFlow(checkout.line_items, constraint.items));
+        }
         break;
       }
       default: {

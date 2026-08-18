@@ -87,6 +87,50 @@ from ap2.sdk.generated.payment_mandate import PaymentMandate  # noqa: E402
 from ap2.sdk.generated.types.amount import Amount  # noqa: E402
 from ap2.sdk.generated.types.merchant import Merchant  # noqa: E402
 from ap2.sdk.generated.types.payment_instrument import PaymentInstrument  # noqa: E402
+from ap2.sdk.generated.checkout_mandate import CheckoutMandate  # noqa: E402
+from ap2.sdk.generated.open_checkout_mandate import (  # noqa: E402
+    Item as MandateItem,
+    LineItemRequirements,
+    LineItems,
+    OpenCheckoutMandate,
+)
+from ap2.sdk.generated.types.item import Item as CheckoutItem  # noqa: E402
+from ap2.sdk.generated.types.line_item import LineItem  # noqa: E402
+from ap2.sdk.generated.types.total import Total  # noqa: E402
+from ap2.sdk.generated.types.checkout import Checkout, Status  # noqa: E402
+from ap2.sdk.generated.types.link import Link  # noqa: E402
+from ap2.sdk.utils import b64url_encode  # noqa: E402
+import base64  # noqa: E402
+import hashlib  # noqa: E402
+
+
+def _sha256_b64url(text: str) -> str:
+    """Match ap2-protocol-js computeSha256B64url: base64url(sha256(utf8)), no pad."""
+    return base64.urlsafe_b64encode(hashlib.sha256(text.encode("utf-8")).digest()).decode().rstrip("=")
+
+
+def _checkout_jwt(line_items) -> str:
+    subtotal = sum(li.item.price * li.quantity for li in line_items)
+    checkout = Checkout(
+        id="chk_test",
+        merchant=Merchant(id="m-1", name="Store"),
+        line_items=line_items,
+        status=Status.incomplete,
+        currency="USD",
+        totals=[Total(type="total", amount=subtotal)],
+        links=[Link(type="terms_of_service", url="https://example.com/tos")],
+    )
+    body = b64url_encode(checkout.model_dump_json(exclude_none=True).encode("utf-8"))
+    return f"hdr.{body}.sig"  # only the payload segment is load-bearing
+
+
+def _line_item(sku: str, title: str, qty: int, price: int) -> LineItem:
+    return LineItem(
+        id=f"li_{sku}",
+        item=CheckoutItem(id=sku, title=title, price=price),
+        quantity=qty,
+        totals=[Total(type="total", amount=price * qty)],
+    )
 
 
 def make_key(kid: str) -> JWK:
@@ -201,6 +245,50 @@ def main() -> int:
             "kind": "chain", "issuer_jwk": public_jwk(unrelated), "token": valid_tok,
             "expected_aud": AUD, "expected_nonce": NONCE, "should_verify": False,
         },
+    ]
+
+    # ── Checkout mandate chains with a line_items constraint ─────────────────
+    client = MandateClient()
+    line_constraint = LineItems(items=[
+        LineItemRequirements(id="r1", acceptable_items=[MandateItem(id="SKU-A", title="Widget")], quantity=2),
+        LineItemRequirements(
+            id="r2",
+            acceptable_items=[MandateItem(id="SKU-B", title="Gadget"), MandateItem(id="SKU-C", title="Gizmo")],
+            quantity=1,
+        ),
+    ])
+
+    def checkout_vector(name, cart, constraints_ok):
+        open_tok = client.create(
+            payloads=[OpenCheckoutMandate(
+                constraints=[line_constraint],
+                cnf={"jwk": json.loads(holder.export_public())},
+            )],
+            issuer_key=issuer,
+        )
+        cjwt = _checkout_jwt(cart)
+        chain = client.present(
+            holder_key=holder, mandate_token=open_tok,
+            payloads=[CheckoutMandate(checkout_jwt=cjwt, checkout_hash=_sha256_b64url(cjwt))],
+            aud=AUD, nonce=NONCE,
+        )
+        return {
+            "name": name, "kind": "checkout-chain", "issuer_jwk": issuer_pub,
+            "token": chain, "checkout_jwt": cjwt,
+            "expected_aud": AUD, "expected_nonce": NONCE,
+            "should_verify": True, "constraints_ok": constraints_ok,
+        }
+
+    vectors += [
+        checkout_vector(
+            "reference checkout chain, line-items satisfied",
+            [_line_item("SKU-A", "Widget", 2, 500), _line_item("SKU-B", "Gadget", 1, 300)], True),
+        checkout_vector(
+            "reference checkout chain, line-items over quantity",
+            [_line_item("SKU-A", "Widget", 3, 500), _line_item("SKU-B", "Gadget", 1, 300)], False),
+        checkout_vector(
+            "reference checkout chain, line-items uncovered sku",
+            [_line_item("SKU-A", "Widget", 2, 500), _line_item("SKU-Z", "Contraband", 1, 999)], False),
     ]
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

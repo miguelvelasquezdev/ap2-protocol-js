@@ -142,8 +142,9 @@ npm run typecheck   # tsc --noEmit at strict settings
 - x5c trusted-root public-key provider (base64url-DER, pairwise chain verify,
   trusted-root anchoring, `kid` fallback). Currently a typed
   `x5c_not_supported` stub.
-- Line-item constraint matching (max-flow: Dinic + Edmonds-Karp, wildcards).
-  Currently a typed not-yet-supported violation.
+- ~~Line-item constraint matching (max-flow, wildcards).~~ **Done** — a
+  faithful port of the reference `max_flow_helper` (greedy degree-1 pre-pass +
+  Dinic); cross-impl vectors in `test/vectors.test.ts`.
 - Disclosure metadata derived from the schema `x-selectively-disclosable-*`
   annotations, and decoy claims.
 - The DPC / human-present flow.

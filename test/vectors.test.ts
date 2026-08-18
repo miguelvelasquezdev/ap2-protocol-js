@@ -3,7 +3,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  parseCheckoutMandateChain,
   parsePaymentMandateChain,
+  verifyCheckoutMandateChain,
   verifyMandate,
   verifyPaymentMandateChain,
   verifyReceipt,
@@ -23,7 +25,7 @@ import {
  */
 interface Vector {
   name: string;
-  kind: "single" | "chain" | "receipt";
+  kind: "single" | "chain" | "checkout-chain" | "receipt";
   issuer_jwk: Jwk;
   token: string;
   expected_aud?: string;
@@ -34,6 +36,8 @@ interface Vector {
   expected_open_checkout_hash?: string;
   expected_transaction_id?: string;
   constraints_ok?: boolean;
+  // Checkout chains:
+  checkout_jwt?: string;
   // Receipts:
   receipt_kind?: "payment" | "checkout";
   reference?: string;
@@ -73,10 +77,17 @@ describe("cross-impl vectors (reference Python -> TS verify)", () => {
 
       // Constraint layer: only meaningful once the chain crypto-verifies.
       if (v.constraints_ok !== undefined && result.ok && result.value.kind === "chain") {
-        const parsed = parsePaymentMandateChain(result.value.payloads);
-        expect(parsed.ok).toBe(true);
-        if (parsed.ok) {
-          const violations = await verifyPaymentMandateChain(parsed.value, {
+        let violations: readonly string[];
+        if (v.kind === "checkout-chain") {
+          const parsed = parseCheckoutMandateChain(result.value.payloads);
+          expect(parsed.ok).toBe(true);
+          if (!parsed.ok) return;
+          violations = await verifyCheckoutMandateChain(parsed.value, { checkoutJwt: v.checkout_jwt! });
+        } else {
+          const parsed = parsePaymentMandateChain(result.value.payloads);
+          expect(parsed.ok).toBe(true);
+          if (!parsed.ok) return;
+          violations = await verifyPaymentMandateChain(parsed.value, {
             ...(v.expected_transaction_id !== undefined
               ? { expectedTransactionId: v.expected_transaction_id }
               : {}),
@@ -84,8 +95,8 @@ describe("cross-impl vectors (reference Python -> TS verify)", () => {
               ? { expectedOpenCheckoutHash: v.expected_open_checkout_hash }
               : {}),
           });
-          expect(violations.length === 0).toBe(v.constraints_ok);
         }
+        expect(violations.length === 0).toBe(v.constraints_ok);
       }
     });
   }
