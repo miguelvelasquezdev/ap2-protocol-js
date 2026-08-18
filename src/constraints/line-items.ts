@@ -18,10 +18,24 @@ import type { LineItem, LineItemRequirements } from "../schemas/index.ts";
 
 const INF = 1e15;
 
+// DoS guard: the matcher is synchronous and worst-case near-cubic on the flow
+// network (a complete bipartite graph when every SKU is acceptable to every
+// requirement — e.g. wildcard slots). Untrusted checkout line items and, within
+// a delegation chain, adversarial requirements can drive that. Real checkouts
+// are tiny (tens of items); anything past these budgets is rejected fail-closed
+// rather than allowed to freeze the event loop. See SECURITY.md "Resource limits".
+const MAX_LINE_ITEMS = 1000;
+const MAX_REQUIREMENTS = 1000;
+const MAX_MATCH_EDGES = 50_000; // distinct SKUs × requirements
+
 export function evaluateLineItemsMaxFlow(
   checkoutItems: readonly LineItem[],
   requirements: readonly LineItemRequirements[],
 ): string[] {
+  if (checkoutItems.length > MAX_LINE_ITEMS || requirements.length > MAX_REQUIREMENTS) {
+    return ["line_items: too many line items or requirements to evaluate"];
+  }
+
   // (A) merge duplicate SKUs, preserving first-seen order.
   const cartQty = new Map<string, number>();
   for (const li of checkoutItems) {
@@ -29,6 +43,10 @@ export function evaluateLineItemsMaxFlow(
     cartQty.set(sku, (cartQty.get(sku) ?? 0) + li.quantity);
   }
   const skuList = [...cartQty.keys()];
+
+  if (skuList.length * requirements.length > MAX_MATCH_EDGES) {
+    return ["line_items: constraint problem exceeds the evaluation budget"];
+  }
 
   const reqAcceptable = requirements.map((r) => new Set(r.acceptable_items.map((ai) => ai.id)));
   const reqIsWildcard = requirements.map((r) => r.acceptable_items.length === 0);

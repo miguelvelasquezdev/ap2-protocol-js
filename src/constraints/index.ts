@@ -431,6 +431,9 @@ export async function verifyPaymentMandate(
     ...(options.clockSkewSeconds !== undefined ? { clockSkewSeconds: options.clockSkewSeconds } : {}),
     ...(options.nowSeconds !== undefined ? { nowSeconds: options.nowSeconds } : {}),
     ...(options.requireHashMode !== undefined ? { requireHashMode: options.requireHashMode } : {}),
+    ...(options.allowIssuerJwtHash !== undefined
+      ? { allowIssuerJwtHash: options.allowIssuerJwtHash }
+      : {}),
   });
   if (!verified.ok) return verified;
   if (verified.value.kind !== "chain") {

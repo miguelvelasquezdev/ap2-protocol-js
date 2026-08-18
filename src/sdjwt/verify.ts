@@ -153,6 +153,8 @@ export interface VerifyKbSdJwtOptions {
   readonly terminal: boolean;
   /** Verifier redaction policy: refuse a hop that did not use this binding. */
   readonly requireHashMode?: HashMode;
+  /** Accept the redaction-tolerant issuer_jwt_hash binding (default: reject). */
+  readonly allowIssuerJwtHash?: boolean;
 }
 
 /** Verify one KB hop under the previous hop's cnf key. */
@@ -171,7 +173,7 @@ export async function verifyKbSdJwt(
 
   const resolved = await resolveDisclosures(token.payload, token.disclosures, sdAlgOf(token));
   const delegateItems = await resolveDelegateItems(token, resolved);
-  await verifyBinding(resolved, options.prevToken, options.requireHashMode);
+  await verifyBinding(resolved, options.prevToken, options.requireHashMode, options.allowIssuerJwtHash);
 
   const isIntermediateTyp = (TYP_INTERMEDIATE as readonly string[]).includes(typ);
   const hasCnf = delegateItems.some((item) => item["cnf"] !== undefined);
@@ -219,9 +221,12 @@ export interface VerifyChainOptions {
   readonly clockSkewSeconds?: number;
   /** Injectable clock in seconds; defaults to the wall clock. */
   readonly nowSeconds?: number;
-  /** Verifier redaction policy for every KB hop (default: accept either
-   * binding mode). Pass "sd_hash" to refuse redaction-tolerant issuer_jwt_hash. */
+  /** Force a specific binding mode on every KB hop (reject the other). */
   readonly requireHashMode?: HashMode;
+  /** Accept the redaction-tolerant issuer_jwt_hash binding. Default false: it
+   * binds only the previous JWS, not its disclosures, so a relay could add or
+   * strip disclosures — rejected unless you explicitly opt in. */
+  readonly allowIssuerJwtHash?: boolean;
 }
 
 /**
@@ -255,6 +260,9 @@ export async function verifyChain(
           ...(isLast ? { expectedAud: options.expectedAud, expectedNonce: options.expectedNonce } : {}),
           ...(options.requireHashMode !== undefined
             ? { requireHashMode: options.requireHashMode }
+            : {}),
+          ...(options.allowIssuerJwtHash !== undefined
+            ? { allowIssuerJwtHash: options.allowIssuerJwtHash }
             : {}),
         });
       }

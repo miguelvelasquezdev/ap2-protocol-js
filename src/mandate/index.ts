@@ -179,8 +179,11 @@ export interface VerifyMandateOptions {
   readonly expectedNonce?: string;
   readonly clockSkewSeconds?: number;
   readonly nowSeconds?: number;
-  /** Refuse redaction-tolerant issuer_jwt_hash binding on any hop. */
+  /** Force a specific binding mode on every hop (reject the other). */
   readonly requireHashMode?: HashMode;
+  /** Accept the redaction-tolerant issuer_jwt_hash binding (default: reject —
+   * it does not cover disclosures, so a relay could add/strip them). */
+  readonly allowIssuerJwtHash?: boolean;
 }
 
 /**
@@ -233,6 +236,9 @@ export async function verifyMandate(
         : {}),
       ...(options.nowSeconds !== undefined ? { nowSeconds: options.nowSeconds } : {}),
       ...(options.requireHashMode !== undefined ? { requireHashMode: options.requireHashMode } : {}),
+      ...(options.allowIssuerJwtHash !== undefined
+        ? { allowIssuerJwtHash: options.allowIssuerJwtHash }
+        : {}),
     });
     if (!result.ok) return result;
     return ok({ kind: "chain", payloads: result.value });

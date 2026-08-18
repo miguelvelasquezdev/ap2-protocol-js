@@ -98,10 +98,11 @@ describe("requireHashMode: verifier can refuse redaction-tolerant binding", () =
     expect(strict.ok).toBe(false);
     if (!strict.ok) expect(strict.error.code).toBe("binding_mismatch");
 
-    // Without the policy the same chain verifies.
+    // With the redaction opt-in the same chain verifies.
     const lax = await verifyMandate({
       token: chain,
       resolveKey,
+      allowIssuerJwtHash: true,
       expectedAud: "cp",
       expectedNonce: "n",
       nowSeconds: FROZEN_NOW,

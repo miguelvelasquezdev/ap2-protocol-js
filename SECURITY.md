@@ -49,6 +49,41 @@ requests can each read a stale counter and double-spend. Also note
 `agent_recurrence` enforces `max_occurrences` only — `frequency`/period windowing
 is not evaluated by the SDK (parity with the reference; it is the network's job).
 
+## Resource limits (DoS)
+
+Verification is synchronous and runs server-side on untrusted input, so it is
+bounded to fail closed rather than exhaust CPU or the stack. The line-item
+matcher rejects a checkout with more than 1000 line items or 1000 requirements,
+or whose matching graph would exceed ~50k edges (distinct SKUs × requirements) —
+a real checkout is tens of items. Disclosure resolution rejects JSON nested past
+256 levels. These bounds are generous for real mandates and stop a crafted token
+from freezing the event loop or overflowing the stack.
+
+## Signature malleability and receipt references
+
+ECDSA signatures are malleable (WebCrypto does not enforce low-S), and the SDK
+accepts both forms — as it must to interoperate with signers that do not
+normalize. Consequence: a receipt `reference` derived from the closed mandate's
+raw JWT bytes is NOT unique across two signature-equivalent presentations of the
+same mandate. Do not use `reference` alone as an idempotency / already-seen key;
+combine it with the mandate's `aud`, `nonce`, and `transaction_id` (signed
+content that cannot be malleated).
+
+## Amount floors
+
+`payment.amount_range` matches the reference exactly: `min` and `max` are each
+optional and only checked when present. A range with no `min` permits any amount
+at or below `max`, including zero or negative. If you require a positive floor,
+the mandate author must set an explicit `min` (e.g. `min: 1`).
+
+## Redaction-tolerant binding is opt-in
+
+The `issuer_jwt_hash` hop binding covers the previous JWS but not its disclosures
+(that is the redaction-privacy property). Because a relay could then add or strip
+disclosures, verification REJECTS it by default; pass `allowIssuerJwtHash: true`
+only if you deliberately use redactable intermediate hops. The default `sd_hash`
+binding covers disclosures and is tamper-evident.
+
 ## Supported versions
 
 The current `0.x` pre-release line is the only supported version. Security fixes

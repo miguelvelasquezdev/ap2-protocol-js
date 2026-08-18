@@ -23,6 +23,9 @@ function assignOwn(target: Record<string, unknown>, key: string, value: unknown)
   });
 }
 
+/** Max JSON nesting depth resolveDisclosures will walk before failing closed. */
+const MAX_DISCLOSURE_DEPTH = 256;
+
 /** 128-bit random salt, base64url (the RFC 9901 recommendation). */
 export const randomSalt: SaltSource = () => {
   const bytes = new Uint8Array(16);
@@ -89,7 +92,14 @@ export async function resolveDisclosures(
   const used = new Set<string>();
   const seenDigests = new Set<string>();
 
-  const resolveNode = (node: unknown): unknown => {
+  const resolveNode = (node: unknown, depth: number): unknown => {
+    // Depth cap: resolveNode recurses on JSON structure. Untrusted disclosures
+    // can nest arbitrarily deep; without a bound a crafted token overflows the
+    // stack (a hard RangeError, which crashes a direct resolveDisclosures caller
+    // outside verify's try/catch). Real mandates are shallow.
+    if (depth > MAX_DISCLOSURE_DEPTH) {
+      throw new Ap2Error("disclosure_invalid", "disclosure nesting exceeds the depth limit");
+    }
     if (Array.isArray(node)) {
       const out: unknown[] = [];
       for (const el of node) {
@@ -106,11 +116,11 @@ export async function resolveDisclosures(
               throw new Ap2Error("disclosure_invalid", "Array digest resolved to a property disclosure");
             }
             used.add(marker);
-            out.push(resolveNode(disc.value));
+            out.push(resolveNode(disc.value, depth + 1));
             continue;
           }
         }
-        out.push(resolveNode(el));
+        out.push(resolveNode(el, depth + 1));
       }
       return out;
     }
@@ -119,7 +129,7 @@ export async function resolveDisclosures(
       const out: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(src)) {
         if (key === "_sd") continue;
-        assignOwn(out, key, resolveNode(value));
+        assignOwn(out, key, resolveNode(value, depth + 1));
       }
       const sd = src["_sd"];
       if (sd !== undefined) {
@@ -145,7 +155,7 @@ export async function resolveDisclosures(
             throw new Ap2Error("disclosure_invalid", `Disclosure name collides with an existing claim: ${disc.name}`);
           }
           used.add(digest);
-          assignOwn(out, disc.name, resolveNode(disc.value));
+          assignOwn(out, disc.name, resolveNode(disc.value, depth + 1));
         }
       }
       return out;
@@ -153,7 +163,7 @@ export async function resolveDisclosures(
     return node;
   };
 
-  const resolved = resolveNode(payload) as Record<string, unknown>;
+  const resolved = resolveNode(payload, 0) as Record<string, unknown>;
   for (const digest of byDigest.keys()) {
     if (!used.has(digest)) {
       throw new Ap2Error("disclosure_invalid", "Disclosure not referenced by any digest");

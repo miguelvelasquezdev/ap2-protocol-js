@@ -94,6 +94,7 @@ describe("issuer_jwt_hash redaction property", () => {
       expectedAud: "cp",
       expectedNonce: "n-2",
       nowSeconds: FROZEN_NOW,
+      allowIssuerJwtHash: true, // redaction-tolerant mode is opt-in
     });
     expect(result.ok).toBe(true);
     if (result.ok && result.value.kind === "chain") {
@@ -126,6 +127,7 @@ describe("issuer_jwt_hash redaction property", () => {
       expectedAud: "cp",
       expectedNonce: "n-2",
       nowSeconds: FROZEN_NOW,
+      allowIssuerJwtHash: true, // redaction-tolerant mode is opt-in
     });
     expect(result.ok).toBe(true);
   });

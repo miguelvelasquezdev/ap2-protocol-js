@@ -146,6 +146,7 @@ export async function verifyBinding(
   payload: Readonly<Record<string, unknown>>,
   prevToken: ParsedToken,
   requireHashMode?: HashMode,
+  allowIssuerJwtHash = false,
 ): Promise<void> {
   const sdHash = payload["sd_hash"];
   const issuerJwtHash = payload["issuer_jwt_hash"];
@@ -157,14 +158,23 @@ export async function verifyBinding(
       "Exactly one of sd_hash / issuer_jwt_hash must be present",
     );
   }
+  const actual: HashMode = hasSd ? "sd_hash" : "issuer_jwt_hash";
   if (requireHashMode !== undefined) {
-    const actual: HashMode = hasSd ? "sd_hash" : "issuer_jwt_hash";
     if (actual !== requireHashMode) {
       throw new Ap2Error(
         "binding_mismatch",
         `Verifier requires ${requireHashMode} binding but the hop used ${actual}`,
       );
     }
+  } else if (actual === "issuer_jwt_hash" && !allowIssuerJwtHash) {
+    // issuer_jwt_hash binds the previous hop's JWS only, NOT its disclosures, so
+    // a keyless relay can add or strip disclosures and the chain still verifies.
+    // Reject it by default (fail-closed); a caller that genuinely needs the
+    // redaction-tolerant mode must opt in with allowIssuerJwtHash.
+    throw new Ap2Error(
+      "binding_mismatch",
+      "issuer_jwt_hash binding is redaction-tolerant (does not cover disclosures) and is rejected by default; pass allowIssuerJwtHash to accept it, or use sd_hash",
+    );
   }
   if (hasSd) {
     if (sdHash !== (await computeSdHash(prevToken))) {
