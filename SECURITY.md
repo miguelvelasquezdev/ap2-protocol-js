@@ -45,7 +45,10 @@ against counters you pass in `MandateContext` (`totalAmount`, `totalUses`,
 what you hand it. To actually prevent over-spend or replay you MUST back these
 counters with a **durable, atomic, race-safe** store and update them under a
 transaction/idempotency key around each authorization; otherwise concurrent
-requests can each read a stale counter and double-spend. Also note
+requests can each read a stale counter and double-spend. See
+`example/enforce-budget.mjs` for the load → verify → commit flow and
+`test/mandate-context-concurrency.test.ts` for the atomic reference pattern
+(and a demonstration that the naive pattern double-spends). Also note
 `agent_recurrence` enforces `max_occurrences` only — `frequency`/period windowing
 is not evaluated by the SDK (parity with the reference; it is the network's job).
 
