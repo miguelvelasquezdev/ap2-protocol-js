@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createMandate,
+  createSdJwt,
   parseToken,
   presentMandate,
   resolveDisclosures,
@@ -112,8 +113,10 @@ describe("requireHashMode: verifier can refuse redaction-tolerant binding", () =
 describe("RFC 9901 s7.1 resolver correctness", () => {
   it("rejects an unrecognized _sd_alg instead of coercing to sha-256", async () => {
     const issuer = await makeKeypair("issuer");
-    const token = await createMandate({
-      payload: { ...samplePaymentMandate(), _sd_alg: "sha-1" },
+    // Build an inline root so _sd_alg lands at the top level of the JWS body
+    // (createMandate now nests the payload in a delegate_payload disclosure).
+    const token = await createSdJwt({
+      claims: { ...samplePaymentMandate(), _sd_alg: "sha-1" },
       issuerKey: issuer.privateJwk,
       saltSource: counterSalts(),
     });

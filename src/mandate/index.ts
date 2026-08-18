@@ -17,7 +17,7 @@ import {
   type DisclosureSpec,
   type SaltSource,
 } from "../sdjwt/disclosure.ts";
-import { createKbSdJwt, createSdJwt } from "../sdjwt/issue.ts";
+import { createDelegateRootSdJwt, createKbSdJwt } from "../sdjwt/issue.ts";
 import {
   canonicalOf,
   parseToken,
@@ -73,9 +73,13 @@ export interface CreateMandateOptions {
   readonly saltSource?: SaltSource;
 }
 
-/** Issue a mandate as a root SD-JWT (serialized, ends with ~). */
+/**
+ * Issue a mandate as a root SD-JWT (serialized, ends with ~). The payload rides
+ * in a `delegate_payload` disclosure so every hop of a chain is in the same
+ * delegate form and a chain we issue verifies in reference implementations.
+ */
 export function createMandate(options: CreateMandateOptions): Promise<string> {
-  return createSdJwt({
+  return createDelegateRootSdJwt({
     claims: options.payload,
     issuerKey: options.issuerKey,
     ...(options.sd !== undefined ? { sd: options.sd } : {}),

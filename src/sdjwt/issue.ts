@@ -66,6 +66,32 @@ export async function createSdJwt(options: CreateSdJwtOptions): Promise<string> 
   return signSdJwt(headerFor(options.issuerKey, options.typ), claims, disclosures, options.issuerKey);
 }
 
+/**
+ * Create a root mandate SD-JWT whose payload rides in a `delegate_payload`
+ * single-element array disclosure (JWS body holds only the digest + `_sd_alg`),
+ * exactly like `createKbSdJwt` does for later hops and like the reference
+ * ap2.sdk does for the root. This keeps every hop of a chain in the same
+ * delegate form, so a chain we issue is byte-compatible with reference verifiers
+ * (a plain inline root collapses to a bare JWS with no disclosure separator when
+ * `~~`-joined, which strict parsers reject).
+ */
+export async function createDelegateRootSdJwt(options: CreateSdJwtOptions): Promise<string> {
+  const saltSource = options.saltSource ?? randomSalt;
+  const inner = await applyDisclosureSpec(options.claims, options.sd, "sha-256", saltSource);
+  const wrapped = await applyDisclosureSpec(
+    { delegate_payload: [inner.claims] },
+    { sdArrayElements: { delegate_payload: "all" } },
+    "sha-256",
+    saltSource,
+  );
+  return signSdJwt(
+    headerFor(options.issuerKey, options.typ),
+    wrapped.claims,
+    [...inner.disclosures, ...wrapped.disclosures],
+    options.issuerKey,
+  );
+}
+
 export interface CreateKbSdJwtOptions {
   /** The previous hop this one binds to. */
   readonly prevToken: ParsedToken;

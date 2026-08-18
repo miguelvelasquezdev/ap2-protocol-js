@@ -46,8 +46,11 @@ describe("signature attacks (single token)", () => {
       issuerKey: issuer.privateJwk,
       saltSource: counterSalts(),
     });
+    // The mandate payload rides in a delegate_payload disclosure; mutating the
+    // signed JWS body (its commitment to that payload) must break the issuer
+    // signature.
     const tampered = tamperPayload(token, (p) => {
-      (p["payment_amount"] as Record<string, unknown>)["amount"] = 1;
+      p["delegate_payload"] = [{ "...": "0000000000000000000000000000000000000000000" }];
     });
     const result = await verifyMandate({ token: tampered, key: issuer.publicJwk, nowSeconds: FROZEN_NOW });
     expect(result.ok).toBe(false);

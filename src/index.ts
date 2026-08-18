@@ -48,6 +48,7 @@ export {
   computeBinding,
   verifyBinding,
   createSdJwt,
+  createDelegateRootSdJwt,
   createKbSdJwt,
   verifySdJwt,
   verifyKbSdJwt,
