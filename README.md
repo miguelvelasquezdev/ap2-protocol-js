@@ -139,9 +139,10 @@ npm run typecheck   # tsc --noEmit at strict settings
 
 ## Roadmap (v1.1)
 
-- x5c trusted-root public-key provider (base64url-DER, pairwise chain verify,
-  trusted-root anchoring, `kid` fallback). Currently a typed
-  `x5c_not_supported` stub.
+- Built-in x5c certificate-chain key discovery. Intentionally not bundled today
+  (key discovery is caller-owned via `resolveKey`; `x5cPublicKeyProvider()` fails
+  closed — see [SECURITY.md](./SECURITY.md) "Key discovery"). An audited built-in
+  provider is a candidate for a future release.
 - ~~Line-item constraint matching (max-flow, wildcards).~~ **Done** — a
   faithful port of the reference `max_flow_helper` (greedy degree-1 pre-pass +
   Dinic); cross-impl vectors in `test/vectors.test.ts`.

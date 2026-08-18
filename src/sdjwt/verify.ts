@@ -33,9 +33,22 @@ export type PublicKeyProvider = (token: ParsedToken) => Jwk | Promise<Jwk>;
  * x5c trusted-root resolution is a documented follow-on; this stub keeps the
  * provider seam stable. See the Python X5cOrKidPublicKeyProvider.
  */
+/**
+ * Placeholder x5c provider. Built-in X.509 certificate-chain key discovery is
+ * intentionally NOT bundled (it would mean shipping a hand-rolled DER/ASN.1 path
+ * validator or a third runtime dependency; the reference likewise leaves x5c to
+ * providers). Resolve the issuer key yourself — from a JWKS endpoint, a DID
+ * document, or your own x5c/trusted-root validation — and pass it via
+ * `resolveKey` / `key`. This provider always fails closed.
+ */
 export function x5cPublicKeyProvider(): PublicKeyProvider {
   return () => {
-    throw new Ap2Error("x5c_not_supported", "x5c chain resolution is not implemented yet");
+    throw new Ap2Error(
+      "x5c_not_supported",
+      "Built-in x5c certificate-chain key discovery is not available. Resolve " +
+        "the issuer key out of band (JWKS / DID / your own x5c validation) and " +
+        "pass it via `resolveKey` or `key`. See SECURITY.md 'Key discovery'.",
+    );
   };
 }
 

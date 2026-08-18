@@ -26,6 +26,17 @@ reviewed. Treat every release in the 0.x line as subject to change.
 - **No side effects.** The library performs no filesystem, network, or logging
   I/O, and never logs token contents, claims, or key material.
 
+## Key discovery
+
+Resolving the **root issuer's** public key is the integrator's responsibility,
+by design — the library never trusts a key named in the token. Pass the resolved
+key via `resolveKey` (chain) or `key` (single token). Do this however your trust
+model requires: a JWKS endpoint (with your own allowlist, `kid` rotation, and
+SSRF protection), a DID document, or your own `x5c` certificate-chain validation
+against trusted roots. Built-in `x5c` chain resolution is intentionally not
+bundled — `x5cPublicKeyProvider()` fails closed and directs you to `resolveKey`.
+(An audited built-in `x5c` provider is a candidate for a future release.)
+
 ## Supported versions
 
 The current `0.x` pre-release line is the only supported version. Security fixes
