@@ -72,12 +72,33 @@ same mandate. Do not use `reference` alone as an idempotency / already-seen key;
 combine it with the mandate's `aud`, `nonce`, and `transaction_id` (signed
 content that cannot be malleated).
 
+## Amount units (read this before setting `max`)
+
+Two constraints carry amounts, in **two different units** — this mirrors the
+reference `ap2.sdk` exactly and is not something this port will "fix" (aligning
+them would break cross-implementation parity):
+
+- **`payment.amount_range`** — `min`/`max` are **unscaled**, in the SAME unit as
+  `payment_amount.amount` (the currency's smallest/minor unit, e.g. cents). A
+  range of `{min: 500, max: 500}` on a USD mandate pins the amount to exactly
+  $5.00.
+- **`payment.budget`** — `max` is a **major** unit and is scaled **×100** before
+  it is compared against the (minor-unit) amount. `{max: 5}` on USD is a $5.00
+  cumulative cap.
+
+**Zero-decimal currencies (COP, JPY, CLP, …):** 1 major == 1 minor, so a
+`budget.max` written in whole pesos/yen is silently 100× too large. To bind an
+exact amount in those currencies use `amount_range` (unscaled) with
+`min == max`; reserve `budget` for cumulative caps and size it in major units
+accordingly.
+
 ## Amount floors
 
 `payment.amount_range` matches the reference exactly: `min` and `max` are each
 optional and only checked when present. A range with no `min` permits any amount
 at or below `max`, including zero or negative. If you require a positive floor,
-the mandate author must set an explicit `min` (e.g. `min: 1`).
+the mandate author must set an explicit `min` (e.g. `min: 1`), or pin the exact
+amount with `min == max`.
 
 ## Redaction-tolerant binding is opt-in
 

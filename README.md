@@ -129,6 +129,13 @@ const chain = await presentMandate({
 A full runnable version (keygen → issue → present → verify, plus the over-budget
 deny) is in [`example/verify-payment-mandate.mjs`](./example/verify-payment-mandate.mjs).
 
+> **Amount units differ per constraint** (mirrors the reference, do not "align"):
+> `payment.amount_range` `min`/`max` are **unscaled** — the same minor unit as
+> `payment_amount.amount` (`{min:100,max:50000}` above is $1.00–$500.00). But
+> `payment.budget` `max` is a **major** unit, scaled ×100. For zero-decimal
+> currencies (COP, JPY…) size `budget` accordingly, or pin an exact amount with
+> `amount_range` (`min == max`). See [SECURITY.md](./SECURITY.md#amount-units-read-this-before-setting-max).
+
 ## Scripts
 
 ```sh

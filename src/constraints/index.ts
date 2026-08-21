@@ -66,6 +66,12 @@ function evaluatePaymentConstraint(
   switch (constraint.type) {
     case "payment.amount_range": {
       const amount = closed.payment_amount;
+      // UNIT CONVENTION — matches the reference ap2.sdk exactly: amount_range
+      // `min`/`max` are compared UNSCALED, in the SAME unit as
+      // payment_amount.amount (the currency's smallest/minor unit). This is
+      // deliberately DIFFERENT from `payment.budget`, whose `max` is a MAJOR
+      // unit scaled ×100 (see that case). Do NOT "align" the two: the split is
+      // reference/spec behavior and changing it breaks cross-impl parity.
       if (amount.currency !== constraint.currency) {
         violations.push(`amount_range: currency ${amount.currency} does not match ${constraint.currency}`);
         break;
@@ -134,7 +140,15 @@ function evaluatePaymentConstraint(
         violations.push("budget: mandate context is required");
         break;
       }
-      // Budget.max is MAJOR units; amounts are MINOR units.
+      // UNIT CONVENTION — matches the reference ap2.sdk exactly: budget.max is
+      // a MAJOR unit and is scaled ×100 to compare against the minor-unit
+      // payment_amount.amount. This is deliberately DIFFERENT from
+      // `payment.amount_range`, whose min/max are minor units and unscaled (see
+      // that case). The split mirrors the reference; do NOT align them.
+      // NOTE for zero-decimal currencies (COP, JPY, CLP…): 1 major == 1 minor,
+      // so a budget.max expressed in those pesos/yen is silently ×100 too large.
+      // Use `amount_range` (unscaled) to pin an exact/again amount in those
+      // currencies; reserve `budget` for cumulative caps and size it accordingly.
       const budgetMinor = Math.round(constraint.max * 100);
       if ((inputs.context.totalAmount ?? 0) + amount.amount > budgetMinor) {
         violations.push("budget: cumulative amount exceeds budget");
