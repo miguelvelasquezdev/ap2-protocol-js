@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "cli": "npx adk run src/roles/shopping/agent.ts",
-    "dev": "concurrently \"npx tsx src/roles/shopping/server.ts\" \"npx tsx src/roles/credentials-provider/server.ts\" \"npx tsx src/roles/payment-processor/server.ts\" \"npx tsx src/roles/merchant/server.ts\" \"npx adk web src/roles/shopping --host localhost -p 3001\""
+    "dev": "concurrently \"npx tsx src/roles/shopping/server.ts\" \"npx tsx src/roles/credentials-provider/server.ts\" \"npx tsx src/roles/payment-processor/server.ts\" \"npx tsx src/roles/merchant/server.ts\" \"npx adk web src/roles/shopping --host localhost -p 3001\"",
+    "ap2:walkthrough": "tsx src/scenarios/ap2-walkthrough.ts"
   },
   "keywords": [
     "ap2",
@@ -49,8 +50,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "uuid": "^13.0.0",
-    "verifiable-intent-js": "^0.1.0",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "ap2-protocol-js": "link:.."
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

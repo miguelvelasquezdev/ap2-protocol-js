@@ -15,7 +15,7 @@ import { getA2AContextFromTool } from "../../common/server/a2a-context.js";
 import type { PaymentMandate } from "../../common/types/payment-mandate.js";
 import type { PaymentReceipt } from "../../common/types/payment-receipt.js";
 import { paymentMandateSchema } from "../../common/schemas/payment-mandate.js";
-import { verifyUserAuthorization } from "../../common/vi/verify.js";
+import { verifyUserAuthorization } from "../../common/ap2/mandates.js";
 import { DATA_KEYS } from "../../common/constants/index.js";
 
 const PAYMENT_MANDATE_DATA_KEY = DATA_KEYS.PAYMENT_MANDATE;

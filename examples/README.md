@@ -1,103 +1,119 @@
-# ap2-protocol-js — examples
+# Try AP2
 
-JavaScript/TypeScript samples for the Agent Payments Protocol (AP2), built on
-the [Agent Development Kit (ADK)](https://google.github.io/adk-docs/) and the
+A runnable sample of the **Agent Payments Protocol (AP2)**: an AI agent buys
+something on a user's behalf, and a merchant and payment processor **verify
+cryptographically that the user really authorized it** — without trusting the
+agent at all.
+
+Built on [`ap2-protocol-js`](../) (the SDK in this repo), Google's
+[ADK](https://google.github.io/adk-docs/) and the
 [A2A SDK](https://www.npmjs.com/package/@a2a-js/sdk).
 
-## Available Scenarios
-
-- **[Human-Present Card Payment](./src/scenarios/a2a/human-present/cards/README.md)**
-    - Complete card payment flow with all four agents implemented in TypeScript.
-
-See the [scenario README](./src/scenarios/a2a/human-present/cards/README.md)
-for detailed setup and usage instructions.
-
-## Why TypeScript for AP2 Agents?
-
-TypeScript is a natural fit for AP2 agents that are deployed alongside web,
-Node.js, or edge runtimes:
-
-- **Type Safety**: Compile-time validation of protocol structures via Zod
-  schemas mirrored from the AP2 reference types.
-- **Ecosystem**: Direct access to the npm ecosystem and the `@a2a-js/sdk` and
-  `@google/adk` packages.
-- **Portability**: Run on any Node.js 20+ runtime, including serverless and
-  container platforms.
-
-## Project Structure
-
-```text
-ap2-protocol-js/
-└── src/
-    ├── roles/                  # Agent role implementations and entry points
-    │   ├── shopping/           # Shopping Agent (root orchestrator)
-    │   │   └── subagents/      # shopper, shipping-collector, payment-collector
-    │   ├── merchant/           # Merchant Agent
-    │   ├── credentials-provider/
-    │   └── payment-processor/
-    ├── common/                 # Shared modules used across roles
-    │   ├── server/             # A2A server bootstrap, executor, middleware
-    │   ├── utils/              # Message and artifact helpers
-    │   ├── types/              # AP2 protocol object types
-    │   ├── schemas/            # Zod schemas mirroring the protocol
-    │   ├── vc/                 # W3C Verifiable Credential helpers
-    │   ├── vi/                 # Verifiable Intent (SD-JWT delegation chain)
-    │   ├── config/             # Session and runtime configuration
-    │   └── constants/          # Shared constants
-    ├── test/
-    │   ├── e2e/                # End-to-end smoke tests
-    │   └── vi/                 # Offline Verifiable Intent unit tests
-    └── scenarios/
-        └── a2a/
-            └── human-present/
-                └── cards/      # Card payment scenario
-```
-
-## Development
+## 1. See it in 60 seconds (no API keys)
 
 ```sh
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-# fill in the required values in .env
-
-# Type-check and build
-npm run build
-
-# Start all four agents plus the ADK web UI
-npm run dev
-
-# Run the e2e smoke tests against running agents
-npm test
-
-# Run only the offline Verifiable Intent unit tests (no agents needed)
-npx vitest run src/test/vi
+pnpm install
+pnpm ap2:walkthrough
 ```
 
-## Verifiable Intent layer
+Prints one purchase being authorized and verified, then shows the attacks a
+verifier rejects — over-charging, replay, tampering. No servers, no LLM, no keys.
+It runs the exact same mandate code the agents use.
 
-The sample integrates the published
-[`verifiable-intent-js`](https://www.npmjs.com/package/verifiable-intent-js)
-SDK to make the user's authorization cryptographically verifiable instead of a
-placeholder string:
+## 2. The whole thing: chat with a shopping agent
 
-- The shopping agent's `signMandatesOnUserDevice` tool builds an SD-JWT
-  delegation chain: an **L1 issuer credential** (standing in for the
-  credentials provider; bound to the user's device key) plus an **L2 immediate
-  user mandate** over the final cart and payment values. The bundle is carried
-  in the payment mandate's `userAuthorization` field as
-  `JSON.stringify({ l1, l2 })` — no schema change.
-- The payment processor's `initiatePayment` tool verifies the chain
-  (`src/common/vi/verify.ts`) — signatures, L1↔L2 binding, expected audience
-  and nonce, and the disclosed payment amount/currency — before raising any
-  challenge or executing the payment, and fails the payment on mismatch.
-- Keys are demo-grade: three ES256 keypairs are generated on first use and
-  persisted to `.vi-keys.json` at the repo root (gitignored) so the issuing
-  and verifying agents share them. Never use them outside the demo.
+Four agents talking over A2A, driven by an LLM, with a chat UI:
 
-See `src/common/vi/` for the issuing/verification helpers and `src/test/vi/`
-for offline unit tests.
+```sh
+cp .env.example .env    # add your Gemini API key
+pnpm dev                # starts the 4 agents + ADK web UI on :3001
+```
 
-See the scenario README for a full walkthrough.
+Open <http://localhost:3001>, pick the shopping agent, and say
+*"I want a tennis racquet"*. It finds a product with the merchant, collects a
+shipping address and payment method, asks you to approve, and only then does the
+payment processor verify the mandate and charge.
+
+Get a Gemini key at [AI Studio](https://aistudio.google.com/apikey) (free tier
+works).
+
+## What AP2 actually does
+
+An LLM agent can be wrong, jailbroken, or hostile. AP2 assumes exactly that: the
+spec treats **every agent as a potential attacker**. So authorization does not
+live in the agent — it lives in two signed mandates:
+
+| | who signs it | what it says |
+|---|---|---|
+| **Open mandate** `mandate.payment.open.1` | the user's **wallet** | "I authorize a payment, bounded by these constraints", key-bound (`cnf`) to one specific agent |
+| **Closed mandate** `mandate.payment.1` | the **agent** | "here is the actual purchase" — amount, payee, instrument — addressed to one verifier (`aud`) with a fresh `nonce` |
+
+They are joined with `~~` into one presentation. The payment processor verifies
+the whole thing in a single fail-closed call:
+
+```ts
+const result = await verifyPaymentMandate({
+  token,                                  // the ~~-joined chain
+  resolveKey: () => walletPublicKey,      // never a key from inside the token
+  expectedAud, expectedNonce,             // replay defense
+  expectedOpenCheckoutHash: checkoutHash, // recomputed, not trusted
+});
+if (result.ok) { /* safe to charge */ }
+```
+
+That one call checks the wallet signature, the agent key-binding, `aud`/`nonce`,
+expiry **and** the constraints the wallet signed. So the agent cannot:
+
+- charge more than the user approved (`payment.amount_range`)
+- pay a different merchant (`payment.allowed_payees`)
+- point the authorization at another cart (`payment.reference`, hash recomputed)
+- replay it at another verifier or for a second purchase (`aud` + `nonce`)
+
+**Start here:** [`src/common/ap2/mandates.ts`](./src/common/ap2/mandates.ts) —
+the whole protocol layer, ~200 commented lines. Everything else is agent
+plumbing.
+
+## Layout
+
+```text
+src/
+├── common/ap2/          ← the AP2 layer. Read this one.
+│   ├── mandates.ts        mint the chain + verify it
+│   ├── keys.ts            demo ES256 keys (wallet / agent / merchant)
+│   └── jwt.ts             the merchant's checkout JWT
+├── roles/               ← the four agents
+│   ├── shopping/          orchestrator + subagents (shopper, shipping, payment)
+│   ├── merchant/          catalog, signs the cart
+│   ├── credentials-provider/  the user's payment methods
+│   └── payment-processor/     VERIFIES the mandate, then charges
+├── scenarios/
+│   ├── ap2-walkthrough.ts   the no-keys narrated demo
+│   └── a2a/human-present/   the full A2A scenario
+└── test/ap2/            ← the flow + the attacks, as tests
+```
+
+## Honest limits
+
+This is a **sample**, not a production deployment:
+
+- All keys are demo keys generated into a gitignored `.ap2-keys.json`. In the
+  real model the wallet key lives on the **user's device** — that is what makes
+  the authorization theirs. Here it does not, so this proves the protocol, not
+  key custody.
+- The merchant, credentials provider and payment processor are simulations; no
+  money moves.
+- Key discovery is a local lookup. In production you resolve the wallet key from
+  a JWKS/registry by `kid`, never from the token.
+
+For production concerns — key discovery, double-spend, replay stores, resource
+limits — see [SECURITY.md](../SECURITY.md).
+
+## Tests
+
+```sh
+pnpm test                      # the AP2 flow + attack cases
+pnpm exec vitest run src/test/ap2
+```
+
+The `src/test/e2e` suite needs the four agents running (`pnpm dev`) and a Gemini
+key; it fails offline by design.
