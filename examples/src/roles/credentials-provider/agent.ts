@@ -1,5 +1,6 @@
 import { LlmAgent } from '@google/adk';
 import { DEBUG_MODE_INSTRUCTIONS } from '../../common/constants/index.js';
+import { GEMINI_MODEL } from '../../common/config/model.js';
 import {
   handleCreatePaymentCredentialToken,
   handleGetPaymentMethodRawCredentials,
@@ -16,7 +17,7 @@ import {
  */
 export const credentialsProviderAgent = new LlmAgent({
   name: 'credentials_provider_agent',
-  model: 'gemini-2.5-flash',
+  model: GEMINI_MODEL,
   description: 'An agent that holds a user\'s payment credentials.',
   instruction: `You are a credentials provider agent acting as a secure digital wallet.
 Your job is to manage a user's payment methods and shipping addresses.

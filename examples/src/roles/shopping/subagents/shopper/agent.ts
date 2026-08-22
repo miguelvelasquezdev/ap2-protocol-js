@@ -1,6 +1,7 @@
 import { LlmAgent } from '@google/adk';
 import { DEBUG_MODE_INSTRUCTIONS } from '../../../../common/constants/index.js';
 import { createIntentMandate, findProducts, updateChosenCartMandate } from './tools.js';
+import { GEMINI_MODEL } from '../../../../common/config/model.js';
 
 /**
  * Shopper Agent (ADK)
@@ -10,7 +11,7 @@ import { createIntentMandate, findProducts, updateChosenCartMandate } from './to
  */
 export const shopperAgent = new LlmAgent({
   name: 'shopper_agent',
-  model: 'gemini-2.5-flash',
+  model: GEMINI_MODEL,
   description: 'An agent responsible for helping the user shop for products.',
   instruction: `You are an agent responsible for helping the user shop for products.
 

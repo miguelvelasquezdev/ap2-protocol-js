@@ -21,6 +21,7 @@ import { getCartMandate, getRiskData, setCartMandate, setRiskData } from './stor
 import { GoogleGenAI } from '@google/genai';
 import { AGENT_URLS } from '../index.js';
 import { DATA_KEYS } from '../../common/constants/index.js';
+import { GEMINI_MODEL } from '../../common/config/model.js';
 
 /** Known shopping agent IDs allowed to interact with this merchant. */
 const KNOWN_SHOPPING_AGENTS = new Set(['trusted_shopping_agent']);
@@ -123,7 +124,7 @@ Return a JSON array where each object has: label (string), amount (object with c
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         const result = await genAI.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: GEMINI_MODEL,
           contents: prompt,
           config: {
             responseMimeType: 'application/json',

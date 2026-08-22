@@ -1,6 +1,7 @@
 import { LlmAgent } from '@google/adk';
 import { DEBUG_MODE_INSTRUCTIONS } from '../../common/constants/index.js';
 import { findItemsWorkflow, updateCart, initiatePayment, dpcFinish } from './tools.js';
+import { GEMINI_MODEL } from '../../common/config/model.js';
 
 /**
  * Merchant Agent (ADK)
@@ -10,7 +11,7 @@ import { findItemsWorkflow, updateCart, initiatePayment, dpcFinish } from './too
  */
 export const merchantAgent = new LlmAgent({
   name: 'merchant_agent',
-  model: 'gemini-2.5-flash',
+  model: GEMINI_MODEL,
   description: 'A sales assistant agent for a merchant.',
   instruction: `You are a merchant sales assistant agent. Your role is to help customers find products, manage their shopping cart, and complete purchases.
 

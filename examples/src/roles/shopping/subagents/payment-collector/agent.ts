@@ -1,6 +1,7 @@
 import { LlmAgent } from "@google/adk";
 import { DEBUG_MODE_INSTRUCTIONS } from "../../../../common/constants/index.js";
 import { getPaymentMethods, getPaymentCredentialToken } from "./tools.js";
+import { GEMINI_MODEL } from '../../../../common/config/model.js';
 
 /**
  * Payment Method Collector Agent (ADK)
@@ -9,7 +10,7 @@ import { getPaymentMethods, getPaymentCredentialToken } from "./tools.js";
  */
 export const paymentCollectorAgent = new LlmAgent({
   name: "payment_method_collector_agent",
-  model: "gemini-2.5-flash",
+  model: GEMINI_MODEL,
   description:
     "A subagent that collects payment method information from users.",
   instruction: `You are an agent responsible for obtaining the user's payment method for a purchase.

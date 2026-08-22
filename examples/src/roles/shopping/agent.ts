@@ -14,6 +14,7 @@ import {
 import { shopperAgent } from './subagents/shopper/agent.js';
 import { shippingCollectorAgent } from './subagents/shipping-collector/agent.js';
 import { paymentCollectorAgent } from './subagents/payment-collector/agent.js';
+import { GEMINI_MODEL } from '../../common/config/model.js';
 
 /**
  * Shopping Agent (ADK)
@@ -24,7 +25,7 @@ import { paymentCollectorAgent } from './subagents/payment-collector/agent.js';
  */
 export const shoppingAgent = new LlmAgent({
   name: 'root_agent',
-  model: 'gemini-2.5-flash',
+  model: GEMINI_MODEL,
   description: 'A shopping agent responsible for helping users find and purchase products from merchants.',
   instruction: `You are a shopping agent responsible for helping users find and purchase products from merchants.
 

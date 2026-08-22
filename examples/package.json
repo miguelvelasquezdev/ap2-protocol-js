@@ -26,8 +26,10 @@
   },
   "dependencies": {
     "@a2a-js/sdk": "^0.3.13",
+    "@digitalbazaar/credentials-context": "^3.2.0",
     "@digitalbazaar/ed25519-signature-2020": "^5.4.0",
     "@digitalbazaar/ed25519-verification-key-2020": "^4.2.0",
+    "@digitalbazaar/security-context": "^1.0.1",
     "@digitalbazaar/vc": "^7.3.0",
     "@google-cloud/opentelemetry-cloud-monitoring-exporter": "^0.21.0",
     "@google-cloud/opentelemetry-cloud-trace-exporter": "^3.0.0",
@@ -47,11 +49,12 @@
     "@opentelemetry/sdk-node": "^0.205.0",
     "@opentelemetry/sdk-trace-base": "^2.1.0",
     "@opentelemetry/sdk-trace-node": "^2.1.0",
+    "ap2-protocol-js": "link:..",
     "dotenv": "^17.4.2",
+    "ed25519-signature-2020-context": "^1.1.0",
     "express": "^5.1.0",
     "uuid": "^13.0.0",
-    "zod": "^4.3.6",
-    "ap2-protocol-js": "link:.."
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

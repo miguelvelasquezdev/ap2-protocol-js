@@ -1,6 +1,7 @@
 import { LlmAgent } from "@google/adk";
 import { DEBUG_MODE_INSTRUCTIONS } from "../../common/constants/index.js";
 import { initiatePayment } from "./tools.js";
+import { GEMINI_MODEL } from '../../common/config/model.js';
 
 /**
  * Payment Processor Agent (ADK)
@@ -9,7 +10,7 @@ import { initiatePayment } from "./tools.js";
  */
 export const paymentProcessorAgent = new LlmAgent({
   name: "payment_processor_agent",
-  model: "gemini-2.5-flash",
+  model: GEMINI_MODEL,
   description: "An agent that processes card payments on behalf of a merchant.",
   instruction: `You are a payment processor agent that handles card payments.
 

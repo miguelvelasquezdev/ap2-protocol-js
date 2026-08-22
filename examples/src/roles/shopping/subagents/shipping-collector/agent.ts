@@ -1,6 +1,7 @@
 import { LlmAgent } from '@google/adk';
 import { DEBUG_MODE_INSTRUCTIONS } from '../../../../common/constants/index.js';
 import { getShippingAddress, saveManualShippingAddress } from './tools.js';
+import { GEMINI_MODEL } from '../../../../common/config/model.js';
 
 /**
  * Shipping Address Collector Agent (ADK)
@@ -10,7 +11,7 @@ import { getShippingAddress, saveManualShippingAddress } from './tools.js';
  */
 export const shippingCollectorAgent = new LlmAgent({
   name: 'shipping_address_collector_agent',
-  model: 'gemini-2.5-flash',
+  model: GEMINI_MODEL,
   description: 'A subagent that collects shipping address information from users.',
   instruction: `You are an agent responsible for obtaining the user's shipping address.
 
