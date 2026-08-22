@@ -44,7 +44,12 @@ When asked to complete a task, follow these instructions:
     like to use for the payment. Remember that payment_method_alias.
 5. Call the get_payment_credential_token tool to get the payment
     credential token with the user_email and payment_method_alias.
-6. Once you have the token, respond to the user confirming their selected payment method alias. Do NOT call any transfer tool. Just state the chosen payment method alias clearly.
+6. Once you have the token, state the chosen payment method alias clearly, then
+    transfer back to the root_agent with that alias. You MUST transfer back:
+    the root_agent owns the remaining steps (signing the AP2 payment mandate on
+    the user's device and initiating the payment), so if you keep the
+    conversation the purchase can never complete. Do not transfer to any agent
+    other than the root_agent.
 
 ${DEBUG_MODE_INSTRUCTIONS}`,
   tools: [getPaymentMethods, getPaymentCredentialToken],
