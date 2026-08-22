@@ -241,8 +241,9 @@ export function checkPaymentConstraints(
   return violations;
 }
 
-/** Checkout constraint checks. Line-item matching (max-flow) is a documented
- * follow-on; it currently returns a typed violation rather than passing. */
+/** Checkout constraint checks: preset claims plus line-item matching
+ * (max-flow / Dinic — see ./line-items.ts). Returns violations (empty =
+ * satisfied). */
 export function checkCheckoutConstraints(
   openMandate: OpenCheckoutMandate,
   checkout: Checkout,

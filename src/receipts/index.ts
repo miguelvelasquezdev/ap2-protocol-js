@@ -30,17 +30,30 @@ export interface CreatePaymentReceiptOptions {
   /** The verified closed Payment Mandate contents. */
   readonly paymentMandate: PaymentMandate;
   readonly reference: string;
+  /**
+   * Who issued (signed) this receipt — becomes its `iss`. REQUIRED: an audit
+   * artifact whose issuer is empty has little probative value. Use your wallet /
+   * verifier identity (e.g. the signing key's domain or a stable kid). Mirrors
+   * `merchant` on the checkout receipt.
+   */
+  readonly issuer: string;
+  /**
+   * The PSP's REAL confirmation id — reused across payment_id /
+   * psp_confirmation_id / network_confirmation_id. REQUIRED: previously this
+   * defaulted to a random UUID, which fabricated a plausible-looking id that
+   * could not be joined to the charge the receipt certifies — the one thing an
+   * audit artifact must never do. If you do not yet have the PSP's id, do not
+   * mint the receipt.
+   */
+  readonly confirmationId: string;
   readonly nowSeconds?: number;
-  /** Confirmation id (defaults to one random UUID reused across the three id
-   * fields, matching the Python sample behavior). */
-  readonly confirmationId?: string;
 }
 
 export function createPaymentReceipt(options: CreatePaymentReceiptOptions): PaymentReceipt {
-  const id = options.confirmationId ?? globalThis.crypto.randomUUID();
+  const id = options.confirmationId;
   return {
     status: "Success",
-    iss: options.paymentMandate.pisp?.domain_name ?? "",
+    iss: options.issuer,
     iat: options.nowSeconds ?? Math.floor(Date.now() / 1000),
     reference: options.reference,
     payment_id: id,

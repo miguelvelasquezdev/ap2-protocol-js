@@ -25,7 +25,7 @@ import {
   type HashMode,
   type ParsedToken,
 } from "../sdjwt/token.ts";
-import { verifyChain, verifySdJwt, type PublicKeyProvider } from "../sdjwt/verify.ts";
+import { checkTimeClaims, verifyChain, verifySdJwt, type PublicKeyProvider } from "../sdjwt/verify.ts";
 
 const CHAIN_SEPARATOR = "~~";
 
@@ -205,11 +205,30 @@ export async function verifyMandate(
       }
       const token = parseToken(segments[0] ?? "");
       const verified = await verifySdJwt(token, { issuerKey: options.key });
+      const resolved = verified.verifiedPayload ?? {};
       const items = verified.delegateItems ?? [];
       if (items.length > 1) {
         return err("payload_invalid", "Expected exactly one disclosed delegate_payload item");
       }
-      const payload = items[0] ?? verified.verifiedPayload ?? {};
+      const payload = items[0] ?? resolved;
+      // A delegate root whose delegate_payload disclosure was stripped (e.g.
+      // `jwt~d1~` relayed as `jwt~`) still verifies as a JWS but resolves to
+      // zero delegate items and an empty payload. A mandate with no disclosed
+      // payload authorizes nothing — fail closed instead of returning `ok` with
+      // a payload that has no `vct` (and would TypeError on payment_amount).
+      if (items.length === 0 && typeof payload["vct"] !== "string") {
+        return err(
+          "payload_invalid",
+          "Mandate has no disclosed payload (delegate_payload missing or stripped)",
+        );
+      }
+      // Single-token mode must enforce exp/nbf/iat exactly like chain mode does;
+      // otherwise a standalone expired mandate verifies `ok` (nowSeconds was
+      // accepted but ignored here).
+      const nowSeconds = options.nowSeconds ?? Math.floor(Date.now() / 1000);
+      const clockSkew = options.clockSkewSeconds ?? 300;
+      checkTimeClaims(resolved, nowSeconds, clockSkew, "token");
+      for (const item of items) checkTimeClaims(item, nowSeconds, clockSkew, "token delegate");
       return ok({ kind: "single", payload });
     }
 

@@ -18,16 +18,19 @@ const paymentMandate: PaymentMandate = {
 };
 
 describe("payment receipts", () => {
-  it("iss inherits the PISP domain; empty when absent", () => {
-    const withPisp = createPaymentReceipt({ paymentMandate, reference: "r", nowSeconds: FROZEN_NOW });
-    expect(withPisp.iss).toBe("pi.test");
-    const { pisp: _pisp, ...noPisp } = paymentMandate;
+  it("iss is the provided issuer; confirmationId fills the id fields (never fabricated)", () => {
     const receipt = createPaymentReceipt({
-      paymentMandate: noPisp as PaymentMandate,
+      paymentMandate,
       reference: "r",
+      issuer: "wallet.breshos.test",
+      confirmationId: "wompi_tx_42",
       nowSeconds: FROZEN_NOW,
     });
-    expect(receipt.iss).toBe("");
+    expect(receipt.iss).toBe("wallet.breshos.test"); // not "" and not the PISP
+    // The real PSP id joins the receipt to the charge — same across all three.
+    expect(receipt.payment_id).toBe("wompi_tx_42");
+    expect(receipt.psp_confirmation_id).toBe("wompi_tx_42");
+    expect(receipt.network_confirmation_id).toBe("wompi_tx_42");
   });
 
   it("round-trips create -> sign -> verify with a store hit", async () => {
@@ -35,6 +38,8 @@ describe("payment receipts", () => {
     const receipt = createPaymentReceipt({
       paymentMandate,
       reference: "ref-1",
+      issuer: "wallet.test",
+      confirmationId: "psp_1",
       nowSeconds: FROZEN_NOW,
     });
     const jwt = await signReceipt(receipt, issuer.privateJwk);
@@ -50,7 +55,7 @@ describe("payment receipts", () => {
   it("fails when the reference is not in the store", async () => {
     const issuer = await makeKeypair("issuer");
     const jwt = await signReceipt(
-      createPaymentReceipt({ paymentMandate, reference: "ref-1", nowSeconds: FROZEN_NOW }),
+      createPaymentReceipt({ paymentMandate, reference: "ref-1", issuer: "wallet.test", confirmationId: "psp_1", nowSeconds: FROZEN_NOW }),
       issuer.privateJwk,
     );
     const result = await verifyReceipt({
@@ -67,7 +72,7 @@ describe("payment receipts", () => {
     const issuer = await makeKeypair("issuer");
     const other = await makeKeypair("other");
     const jwt = await signReceipt(
-      createPaymentReceipt({ paymentMandate, reference: "ref-1", nowSeconds: FROZEN_NOW }),
+      createPaymentReceipt({ paymentMandate, reference: "ref-1", issuer: "wallet.test", confirmationId: "psp_1", nowSeconds: FROZEN_NOW }),
       issuer.privateJwk,
     );
     const result = await verifyReceipt({

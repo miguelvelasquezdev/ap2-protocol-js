@@ -36,6 +36,22 @@ export function evaluateLineItemsMaxFlow(
     return ["line_items: too many line items or requirements to evaluate"];
   }
 
+  // Negative quantities have no legitimate meaning for a line item and would
+  // NET against positive ones: [A×5, A×−4] could satisfy a quantity:1 slot, and
+  // [Z×5, Z×−5] could smuggle an unauthorized SKU past the uncovered-SKU check
+  // by netting Z to zero (which line (D) then skips). The reference nets them;
+  // we DELIBERATELY diverge and fail closed. See SECURITY.md "Line-item quantities".
+  for (const li of checkoutItems) {
+    if (!Number.isInteger(li.quantity) || li.quantity < 0) {
+      return [`line_items: invalid quantity ${li.quantity} for item ${li.item.id}`];
+    }
+  }
+  for (const r of requirements) {
+    if (!Number.isInteger(r.quantity) || r.quantity < 0) {
+      return [`line_items: invalid requirement quantity ${r.quantity} for ${r.id}`];
+    }
+  }
+
   // (A) merge duplicate SKUs, preserving first-seen order.
   const cartQty = new Map<string, number>();
   for (const li of checkoutItems) {

@@ -62,6 +62,29 @@ a real checkout is tens of items. Disclosure resolution rejects JSON nested past
 256 levels. These bounds are generous for real mandates and stop a crafted token
 from freezing the event loop or overflowing the stack.
 
+## Line-item quantities
+
+The `checkout.line_items` matcher rejects any line item or requirement with a
+**negative or non-integer quantity**, fail-closed. This is a deliberate
+divergence from the reference, which nets quantities: without the guard,
+`[A×5, A×−4]` would satisfy a `quantity: 1` slot, and `[Z×5, Z×−5]` would smuggle
+an unauthorized SKU past the uncovered-item check by netting it to zero. A
+negative line-item quantity has no legitimate meaning, so we reject rather than
+net.
+
+## Payment mandates without a separate checkout mandate
+
+A payment mandate schema requires at least one `payment.reference` constraint,
+whose `conditional_transaction_id` is checked against the `expectedOpenCheckoutHash`
+you pass at verify time. When you mint a checkout mandate, that value is its
+`sd_hash`. When you DON'T (a payment-only v1 with no checkout step), the supported
+pattern is to use a **stable identifier for the thing being paid — your order
+id** — as BOTH the constraint's `conditional_transaction_id` and the verifier's
+`expectedOpenCheckoutHash`. That is not a workaround: it binds the chain to
+exactly one order, which is the property `payment.reference` exists to give. Use
+an id the client cannot forge (server-minted), and pass the same value on both
+sides.
+
 ## Signature malleability and receipt references
 
 ECDSA signatures are malleable (WebCrypto does not enforce low-S), and the SDK

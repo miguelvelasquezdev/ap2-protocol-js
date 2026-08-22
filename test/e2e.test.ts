@@ -96,6 +96,8 @@ describe("e2e human-not-present payment flow", () => {
     const receipt = createPaymentReceipt({
       paymentMandate: parsed.value.closedMandate,
       reference,
+      issuer: "psp.test",
+      confirmationId: "psp_confirmation_1",
       nowSeconds: FROZEN_NOW,
     });
     const receiptJwt = await signReceipt(receipt, psp.privateJwk);

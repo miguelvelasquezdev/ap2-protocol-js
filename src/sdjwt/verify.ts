@@ -30,10 +30,6 @@ import {
 export type PublicKeyProvider = (token: ParsedToken) => Jwk | Promise<Jwk>;
 
 /**
- * x5c trusted-root resolution is a documented follow-on; this stub keeps the
- * provider seam stable. See the Python X5cOrKidPublicKeyProvider.
- */
-/**
  * Placeholder x5c provider. Built-in X.509 certificate-chain key discovery is
  * intentionally NOT bundled (it would mean shipping a hand-rolled DER/ASN.1 path
  * validator or a third runtime dependency; the reference likewise leaves x5c to
@@ -94,7 +90,7 @@ async function resolveDelegateItems(
   return items;
 }
 
-function checkTimeClaims(
+export function checkTimeClaims(
   payload: Readonly<Record<string, unknown>>,
   nowSeconds: number,
   clockSkewSeconds: number,
