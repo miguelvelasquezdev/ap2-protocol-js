@@ -34,6 +34,20 @@ Open <http://localhost:3001>, pick the shopping agent, and say
 shipping address and payment method, asks you to approve, and only then does the
 payment processor verify the mandate and charge.
 
+**Use a seeded demo identity** — the credentials provider only knows a few
+accounts, and the payment method has to match what the cart accepts (a CARD
+cart cannot be paid with a PayPal-only account):
+
+| email | has |
+|---|---|
+| `bugsbunny@gmail.com` | Amex cards, bank account, PayPal — **use this one** |
+| `daffyduck@gmail.com` | bank account only |
+| `elmerfudd@gmail.com` | PayPal only |
+
+Pick the payment method by the exact alias the agent lists (e.g.
+*"American Express ending in 4444"*). When the issuer asks for a verification
+code, the demo OTP is `123`.
+
 Get a Gemini key at [AI Studio](https://aistudio.google.com/apikey) (free tier
 works).
 
