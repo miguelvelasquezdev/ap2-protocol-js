@@ -54,7 +54,9 @@
     "ed25519-signature-2020-context": "^1.1.0",
     "express": "^5.1.0",
     "uuid": "^13.0.0",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "agentic-checkout": "link:../../../agentic-checkout/packages/agentic-checkout",
+    "@agentic-checkout/ap2": "link:../../../agentic-checkout/packages/ap2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

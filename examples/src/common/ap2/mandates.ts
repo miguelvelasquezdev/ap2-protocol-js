@@ -33,9 +33,9 @@ import {
   computeSha256B64url,
   createMandate,
   presentMandate,
-  verifyPaymentMandate,
   type Jwk,
 } from "ap2-protocol-js";
+import { AP2_VERIFIER, verifyViaGateway, verifyViaSdk } from "./verifier.js";
 import type { CartMandate } from "../types/cart-mandate.js";
 import type { PaymentMandate } from "../types/payment-mandate.js";
 import { getAp2Keys } from "./keys.js";
@@ -212,23 +212,31 @@ export async function verifyUserAuthorization(
     // an identifier that arrived inside the token.
     const checkoutHash = await computeSha256B64url(bundle.checkoutJwt);
 
-    const result = await verifyPaymentMandate({
+    const verifyOptions = {
       token: bundle.mandate,
       // The wallet's PUBLIC key. In production you resolve this from a JWKS /
       // registry keyed by the token's `kid` — never from the token itself.
-      resolveKey: () => keys.wallet.publicKey,
+      issuerKey: keys.wallet.publicKey,
       expectedAud,
       expectedNonce: nonceFor(contents),
       expectedOpenCheckoutHash: checkoutHash,
-    });
+    };
 
-    if (!result.ok) {
-      return { valid: false, errors: [`${result.error.code}: ${result.error.message}`] };
+    // Two ways to reach the SAME cryptographic decision — pick with
+    // AP2_VERIFIER (see ./verifier.ts). The gateway path delegates to this very
+    // SDK, so a mandate accepted by one is accepted by the other.
+    const outcome =
+      AP2_VERIFIER === "gateway"
+        ? await verifyViaGateway(verifyOptions)
+        : await verifyViaSdk(verifyOptions);
+
+    if (!outcome.ok) {
+      return { valid: false, errors: [outcome.error] };
     }
 
     // Authentic ≠ authorizes this charge: compare what the mandate SAYS with
     // what the processor is about to do.
-    const closed = result.value.chain.closedMandate;
+    const closed = outcome.closedMandate;
     const errors: string[] = [];
     const expectedAmount = toMinorUnits(contents.paymentDetailsTotal.amount.value);
     const expectedCurrency = contents.paymentDetailsTotal.amount.currency;
